@@ -1,4 +1,4 @@
-/* Thalia - A fast, general-purpose programming language
+/* Content - Content for the lexical analyzer
  * Copyright (C) 2023 Stan Vlad <vstan02@protonmail.com>
  *
  * This file is part of Thalia.
@@ -17,21 +17,40 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
-#include <string>
+#ifndef THALIA_LEXER_CONTENT
+#define THALIA_LEXER_CONTENT
 
-#include <lexer/lexer.hpp>
+#include <cstddef>
 
-extern int main() {
-  using namespace thalia;
-  lexer::lexer lexer("23 + 56");
-  std::vector<lexer::token> tokens = lexer.scan();
+namespace thalia::lexer {
+	class content {
+		public:
+			content(char const* target);
 
-  std::cout << "Tokens (" << tokens.size() << "):\n";
-  for (const lexer::token& token: tokens) {
-  	std::cout << "=> line[" << token.line << "] type["
-  		<< token.type <<  "] -> \""
-  		<< std::string(token.start, token.size) << "\"\n";
-  }
-	return 0;
+			std::size_t line() const;
+
+			bool is_eof() const;
+			bool is_eol() const;
+
+			void skip_whitespaces();
+
+			char const* word() const;
+			std::size_t size() const;
+
+			void start_word();
+			char advance();
+
+			char operator[](std::size_t index) const;
+			void operator>>(std::size_t index);
+
+		private:
+			std::size_t _line;
+			char const* _start;
+			char const* _current;
+
+		private:
+			void skip_comments();
+	};
 }
+
+#endif // THALIA_LEXER_CONTENT

@@ -1,4 +1,4 @@
-/* Thalia - A fast, general-purpose programming language
+/* Exception - Thalia lexical analyzer exceptions
  * Copyright (C) 2023 Stan Vlad <vstan02@protonmail.com>
  *
  * This file is part of Thalia.
@@ -17,21 +17,13 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
-#include <string>
+#include "lexer/exception.hpp"
 
-#include <lexer/lexer.hpp>
+namespace thalia::lexer {
+	exception::exception(const char *message, std::size_t line)
+		: std::runtime_error(message), _line(line) {}
 
-extern int main() {
-  using namespace thalia;
-  lexer::lexer lexer("23 + 56");
-  std::vector<lexer::token> tokens = lexer.scan();
-
-  std::cout << "Tokens (" << tokens.size() << "):\n";
-  for (const lexer::token& token: tokens) {
-  	std::cout << "=> line[" << token.line << "] type["
-  		<< token.type <<  "] -> \""
-  		<< std::string(token.start, token.size) << "\"\n";
-  }
-	return 0;
+	std::size_t exception::where() const noexcept {
+		return _line;
+	}
 }

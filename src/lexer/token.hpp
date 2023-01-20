@@ -1,4 +1,4 @@
-/* Thalia - A fast, general-purpose programming language
+/* Token - Thalia lexical tokens
  * Copyright (C) 2023 Stan Vlad <vstan02@protonmail.com>
  *
  * This file is part of Thalia.
@@ -17,21 +17,52 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
-#include <string>
+#ifndef THALIA_LEXER_TOKEN
+#define THALIA_LEXER_TOKEN
 
-#include <lexer/lexer.hpp>
+#include <cstddef>
 
-extern int main() {
-  using namespace thalia;
-  lexer::lexer lexer("23 + 56");
-  std::vector<lexer::token> tokens = lexer.scan();
+namespace thalia::lexer {
+	enum token_type {
+		LEFT_PAREN,
+		RIGHT_PAREN,
+		LEFT_BRACE,
+		RIGHT_BRACE,
+		LEFT_BRACKET,
+		RIGHT_BRACKET,
+		COMMA,
+		DOT,
+		MINUS,
+		PLUS,
+		SEMICOLON,
+		SLASH,
+		STAR,
+		PERCENT,
+		BANG,
+		BANG_EQUAL,
+		EQUAL,
+		EQUAL_EQUAL,
+		GREATER,
+		GREATER_EQUAL,
+		LESS,
+		LESS_EQUAL,
+		NUMBER,
+		AND,
+		OR,
+		TRUE,
+		FALSE,
+		NONE,
+		PROGRAM,
+		IDENTIFIER,
+		END
+	};
 
-  std::cout << "Tokens (" << tokens.size() << "):\n";
-  for (const lexer::token& token: tokens) {
-  	std::cout << "=> line[" << token.line << "] type["
-  		<< token.type <<  "] -> \""
-  		<< std::string(token.start, token.size) << "\"\n";
-  }
-	return 0;
+	struct token {
+		token_type type;
+		char const* start;
+		std::size_t size;
+		std::size_t line;
+	};
 }
+
+#endif // THALIA_LEXER_TOKEN
