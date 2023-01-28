@@ -29,7 +29,8 @@
 namespace thalia::lexer {
 	class lexer {
 		public:
-			explicit lexer(char const* code);
+			explicit lexer(char const* code)
+				: _tokens(), _code(code) {}
 
 			std::vector<token> scan();
 
@@ -38,18 +39,34 @@ namespace thalia::lexer {
 			content _code;
 
 		private:
-			[[nodiscard]] bool is_alpha(char) const;
-			[[nodiscard]] bool is_digit(char) const;
-			[[nodiscard]] bool is_alphanum(char) const;
-
 			token next_token();
 			token_type id_token();
 
-			token make_token(token_type);
 			token make_id();
 			token make_number();
 			token choose_token(char, token_type, token_type);
 			token assert_token(char, token_type);
+
+			bool is_digit(char ch) const {
+				return ch >= '0' && ch <= '9';
+			}
+
+			bool is_alphanum(char ch) const {
+				return is_alpha(ch) || is_digit(ch);
+			}
+
+			bool is_alpha(char ch) const {
+				return ch == '_' || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+			}
+
+			token make_token(token_type type) const {
+				return token {
+					.type = type,
+					.start = _code.word(),
+					.size = _code.size(),
+					.line = _code.line()
+				};
+			}
 	};
 }
 

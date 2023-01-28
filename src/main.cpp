@@ -18,20 +18,23 @@
  */
 
 #include <iostream>
-#include <string>
 
 #include <lexer/lexer.hpp>
+#include <parser/parser.hpp>
+#include <parser/ast_deallocator.hpp>
+#include <nasm/translator.hpp>
 
 extern int main() {
   using namespace thalia;
-  lexer::lexer lexer("23 + 56");
-  std::vector<lexer::token> tokens = lexer.scan();
+  lexer::lexer lexer("-PI + (-3 * 45) - 7 / 2 * 9 + 5 >= 5 * 2 - (3 + (4 + 78) * 3) + 1 * 4");
 
-  std::cout << "Tokens (" << tokens.size() << "):\n";
-  for (const lexer::token& token: tokens) {
-  	std::cout << "=> line[" << token.line << "] type["
-  		<< token.type <<  "] -> \""
-  		<< std::string(token.start, token.size) << "\"\n";
-  }
+  parser::parser parser(lexer);
+  parser::exprs::expression* ast = parser.parse();
+  parser::ast_deallocator deallocator(ast);
+
+  nasm::translator translator(ast);
+  translator.translate(std::cout);
+
+  deallocator.dealloc();
 	return 0;
 }

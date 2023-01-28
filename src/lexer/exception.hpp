@@ -25,23 +25,24 @@
 namespace thalia::lexer {
 	class exception: public std::runtime_error {
 		public:
-			explicit exception(const char* message, std::size_t line);
+			explicit exception(const char* message, std::size_t line)
+				: std::runtime_error(message), _line(line) {}
 
-			[[nodiscard]] std::size_t where() const noexcept;
+			std::size_t where() const noexcept { return _line; }
 
 		private:
 			std::size_t _line;
 	};
 
-	class unexpected_character_error: public exception {
+	class unexpected_character: public exception {
 		public:
-			explicit unexpected_character_error(std::size_t line)
+			explicit unexpected_character(std::size_t line)
 			: exception("Unexpected character.", line) {}
 	};
 
-	class unterminated_string_error: public exception {
+	class unterminated_string: public exception {
 		public:
-			explicit unterminated_string_error(std::size_t line)
+			explicit unterminated_string(std::size_t line)
 			: exception("Unterminated string.", line) {}
 	};
 }

@@ -25,23 +25,24 @@
 namespace thalia::lexer {
 	class content {
 		public:
-			content(char const* target);
-
-			std::size_t line() const;
-
-			bool is_eof() const;
-			bool is_eol() const;
+			content(char const* target)
+				: _line(1), _start(target), _current(target) {}
 
 			void skip_whitespaces();
 
-			char const* word() const;
-			std::size_t size() const;
+			std::size_t line() const { return _line; }
 
-			void start_word();
-			char advance();
+			bool is_eof() const { return (*this)[0] == '\0'; }
+			bool is_eol() const { return (*this)[0] == '\n'; }
 
-			char operator[](std::size_t index) const;
-			void operator>>(std::size_t index);
+			char const* word() const { return _start; }
+			std::size_t size() const { return _current - _start; }
+
+			char advance() { return (++_current)[-1]; }
+			void start_word() { _start = _current; }
+
+			char operator[](std::size_t index) const { return _current[index]; }
+			void operator>>(std::size_t size) { _start += size; }
 
 		private:
 			std::size_t _line;

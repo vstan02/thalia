@@ -1,4 +1,4 @@
-/* Exception - Thalia lexical analyzer exceptions
+/* Exception - Thalia syntax analyzer exceptions
  * Copyright (C) 2023 Stan Vlad <vstan02@protonmail.com>
  *
  * This file is part of Thalia.
@@ -17,13 +17,22 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "lexer/exception.hpp"
+#ifndef THALIA_PARSER_EXCEPTION
+#define THALIA_PARSER_EXCEPTION
 
-namespace thalia::lexer {
-	exception::exception(const char *message, std::size_t line)
-		: std::runtime_error(message), _line(line) {}
+#include <stdexcept>
 
-	std::size_t exception::where() const noexcept {
-		return _line;
-	}
+namespace thalia::parser {
+	class exception: public std::runtime_error {
+		public:
+			explicit exception(const char* message, std::size_t line)
+				: std::runtime_error(message), _line(line) {}
+
+			std::size_t where() const noexcept { return _line; }
+
+		private:
+			std::size_t _line;
+	};
 }
+
+#endif // THALIA_PARSER_EXCEPTION

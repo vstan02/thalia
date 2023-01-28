@@ -1,5 +1,5 @@
-/* Token - Thalia lexical tokens
- * Copyright (C) 2023 Stan Vlad <vstan02@protonmail.com>
+/* Ast visitor - Thalia syntax tree visitor
+ * Copyright (C) 2021 Stan Vlad <vstan02@protonmail.com>
  *
  * This file is part of Thalia.
  *
@@ -17,53 +17,19 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef THALIA_LEXER_TOKEN
-#define THALIA_LEXER_TOKEN
+#ifndef THALIA_PARSER_AST_VISITOR
+#define THALIA_PARSER_AST_VISITOR
 
-#include <cstddef>
+#include "parser/exprs.hpp"
 
-namespace thalia::lexer {
-	enum token_type {
-		START,
-		LEFT_PAREN,
-		RIGHT_PAREN,
-		LEFT_BRACE,
-		RIGHT_BRACE,
-		LEFT_BRACKET,
-		RIGHT_BRACKET,
-		COMMA,
-		DOT,
-		MINUS,
-		PLUS,
-		SEMICOLON,
-		SLASH,
-		STAR,
-		PERCENT,
-		BANG,
-		BANG_EQUAL,
-		EQUAL,
-		EQUAL_EQUAL,
-		GREATER,
-		GREATER_EQUAL,
-		LESS,
-		LESS_EQUAL,
-		NUMBER,
-		AND,
-		OR,
-		TRUE,
-		FALSE,
-		NONE,
-		PROGRAM,
-		IDENTIFIER,
-		END
-	};
+namespace thalia::parser {
+	class ast_visitor {
+		public:
+			explicit ast_visitor(exprs::expression* target): _target(target) {}
 
-	struct token {
-		token_type type;
-		char const* start;
-		std::size_t size;
-		std::size_t line;
+		protected:
+			exprs::expression* _target;
 	};
 }
 
-#endif // THALIA_LEXER_TOKEN
+#endif // THALIA_PARSER_AST_VISITOR
