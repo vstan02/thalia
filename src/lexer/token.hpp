@@ -24,6 +24,7 @@
 
 namespace thalia::lexer {
 	enum token_type {
+		START,
 		LEFT_PAREN,
 		RIGHT_PAREN,
 		LEFT_BRACE,
@@ -54,6 +55,7 @@ namespace thalia::lexer {
 		NONE,
 		PROGRAM,
 		IDENTIFIER,
+		PRINT,
 		END
 	};
 

@@ -1,5 +1,5 @@
-/* Exception - Thalia lexical analyzer exceptions
- * Copyright (C) 2023 Stan Vlad <vstan02@protonmail.com>
+/* Ast visitor - Thalia syntax tree visitor
+ * Copyright (C) 2021 Stan Vlad <vstan02@protonmail.com>
  *
  * This file is part of Thalia.
  *
@@ -17,13 +17,21 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "lexer/exception.hpp"
+#ifndef THALIA_PARSER_AST_VISITOR
+#define THALIA_PARSER_AST_VISITOR
 
-namespace thalia::lexer {
-	exception::exception(const char *message, std::size_t line)
-		: std::runtime_error(message), _line(line) {}
+#include <vector>
 
-	std::size_t exception::where() const noexcept {
-		return _line;
-	}
+#include "parser/stmts.hpp"
+
+namespace thalia::parser {
+	class ast_visitor {
+		public:
+			explicit ast_visitor(std::vector<stmts::statement*> target): _target(target) {}
+
+		protected:
+			std::vector<stmts::statement*> _target;
+	};
 }
+
+#endif // THALIA_PARSER_AST_VISITOR

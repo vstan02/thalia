@@ -1,2 +1,5 @@
 [generators]
 cmake
+
+[requires]
+termcolor/2.1.0
