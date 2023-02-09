@@ -28,7 +28,7 @@
 #include <parser/ast_deallocator.hpp>
 #include <parser/ast_view.hpp>
 #include <parser/exception.hpp>
-// #include <nasm/translator.hpp>
+#include <nasm/translator.hpp>
 
 extern int main(int argc, char** argv) {
   if (argc < 2) {
@@ -47,11 +47,11 @@ extern int main(int argc, char** argv) {
     std::vector<parser::stmts::statement*> ast = parser.parse();
     parser::ast_deallocator deallocator(ast);
 
-    // nasm::translator translator(ast);
-    // translator.translate(std::cout);
-
     parser::ast_view view(ast);
     view.print();
+
+    nasm::translator translator(ast);
+    translator.translate(std::cout << '\n');
 
     deallocator.dealloc();
   } catch (const thalia::lexer::exception& error) {

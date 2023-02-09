@@ -37,13 +37,13 @@ namespace thalia::lexer {
 	class unexpected_character: public exception {
 		public:
 			explicit unexpected_character(std::size_t line)
-			: exception("Unexpected character.", line) {}
+				: exception("Unexpected character.", line) {}
 	};
 
 	class unterminated_string: public exception {
 		public:
 			explicit unterminated_string(std::size_t line)
-			: exception("Unterminated string.", line) {}
+				: exception("Unterminated string.", line) {}
 	};
 }
 
