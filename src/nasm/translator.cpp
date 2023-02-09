@@ -30,11 +30,9 @@ static char NASM_START[] = ""
 	"_SYS_STDOUT_ equ 1\n\n"
 	"section .bss\n"
 	"_CHR_BSS_ resb 1\n\n"
-	"section .text\n"
-	"_start:\n";
+	"section .text\n";
 
 static char NASM_END[] = ""
-	"call sys_exit\n\n"
 	"int_print:\n"
 	"push rax\n"
 	"push rbx\n"
@@ -102,7 +100,49 @@ static char NASM_END[] = ""
 	"syscall\n";
 
 extern std::ostream& translator::translate(std::ostream& out) {
-	return translate_expression(out << NASM_START, _target) << NASM_END;
+	out << NASM_START;
+	for (parser::stmts::statement* item: _target) {
+		translate_statement(out, item);
+	}
+	return out << NASM_END;
+}
+
+extern std::ostream& translator::translate_statement(std::ostream& out, parser::stmts::statement* node) {
+	if (node == nullptr) return out;
+	using namespace parser;
+	switch (node->type) {
+		case stmts::stmt_type::PROGRAM:
+			return translate_program_statement(out, static_cast<stmts::program*>(node));
+		case stmts::stmt_type::BLOCK:
+			return translate_block_statement(out, static_cast<stmts::block*>(node));
+		case stmts::stmt_type::PRINT:
+			return translate_print_statement(out, static_cast<stmts::print*>(node));
+		case stmts::stmt_type::EXPRESSION:
+			return translate_expression_statement(out, static_cast<stmts::expression*>(node));
+	}
+	return out;
+}
+
+extern std::ostream& translator::translate_program_statement(std::ostream& out, parser::stmts::program* node) {
+	return translate_statement(out << "_start:\n", node->target) << "call sys_exit\n\n";
+}
+
+extern std::ostream& translator::translate_block_statement(std::ostream& out, parser::stmts::block* node) {
+	for (parser::stmts::statement* item: node->stmts) {
+		translate_statement(out, item);
+	}
+	return out;
+}
+
+extern std::ostream& translator::translate_print_statement(std::ostream& out, parser::stmts::print* node) {
+	for (parser::exprs::expression* item: node->target) {
+		translate_expression(out, item) << "pop rax\ncall int_print\nmov rax, ' '\ncall chr_print\n";
+	}
+	return out << "call eol_print\n\n";
+}
+
+extern std::ostream& translator::translate_expression_statement(std::ostream& out, parser::stmts::expression* node) {
+	return translate_expression(out, node->target);
 }
 
 extern std::ostream& translator::translate_expression(std::ostream& out, parser::exprs::expression* node) {
@@ -173,7 +213,7 @@ extern std::ostream& translator::translate_binary_expression(std::ostream& out, 
 			break;
 		default: break;
 	}
-	return out << "push rax\ncall int_print\ncall eol_print\n\n";
+	return out << "push rax\n";
 }
 
 extern std::ostream& translator::translate_unary_expression(std::ostream& out, parser::exprs::unary* node) {
@@ -188,7 +228,7 @@ extern std::ostream& translator::translate_unary_expression(std::ostream& out, p
 			break;
 		default: break;
 	}
-	return out << "push rax\ncall int_print\ncall eol_print\n\n";
+	return out << "push rax\n";
 }
 
 extern std::ostream& translator::translate_grouping_expression(std::ostream& out, parser::exprs::grouping* node) {

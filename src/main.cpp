@@ -18,23 +18,51 @@
  */
 
 #include <iostream>
+#include <fstream>
+#include <exception>
 
 #include <lexer/lexer.hpp>
+#include <lexer/exception.hpp>
+
 #include <parser/parser.hpp>
 #include <parser/ast_deallocator.hpp>
-#include <nasm/translator.hpp>
+#include <parser/ast_view.hpp>
+#include <parser/exception.hpp>
+// #include <nasm/translator.hpp>
 
-extern int main() {
-  using namespace thalia;
-  lexer::lexer lexer("-PI + (-3 * 45) - 7 / 2 * 9 + 5 >= 5 * 2 - (3 + (4 + 78) * 3) + 1 * 4");
+extern int main(int argc, char** argv) {
+  if (argc < 2) {
+    std::cerr << "[Error]: Invalid file path.\n";
+    return 0;
+  }
 
-  parser::parser parser(lexer);
-  parser::exprs::expression* ast = parser.parse();
-  parser::ast_deallocator deallocator(ast);
+  try {
+    std::ifstream file(argv[1]);
+    std::string code((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
-  nasm::translator translator(ast);
-  translator.translate(std::cout);
+    using namespace thalia;
+    lexer::lexer lexer(code.c_str());
 
-  deallocator.dealloc();
+    parser::parser parser(lexer);
+    std::vector<parser::stmts::statement*> ast = parser.parse();
+    parser::ast_deallocator deallocator(ast);
+
+    // nasm::translator translator(ast);
+    // translator.translate(std::cout);
+
+    parser::ast_view view(ast);
+    view.print();
+
+    deallocator.dealloc();
+  } catch (const thalia::lexer::exception& error) {
+    std::cerr << "[Lexing error]: " << error.what() << '\n';
+    std::cerr << "===> at line " << error.where() << '\n';
+  } catch (const thalia::parser::exception& error) {
+    std::cerr << "[Parsing error]: " << error.what() << '\n';
+    std::cerr << "===> at line " << error.where() << '\n';
+  } catch (const std::exception& error) {
+    std::cerr << "[Error]: " << error.what() << '\n';
+  }
+
 	return 0;
 }

@@ -30,11 +30,12 @@ struct keyword {
 	token_type type;
 };
 
-static const keyword keywords[4] = {
+static const keyword keywords[5] = {
 	{ "true", 4, token_type::TRUE },
 	{ "false", 5, token_type::FALSE },
 	{ "null", 4, token_type::NONE },
-	{ "program", 7, token_type::PROGRAM }
+	{ "program", 7, token_type::PROGRAM },
+	{ "print", 5, token_type::PRINT }
 };
 
 extern std::vector<token> lexer::scan() {

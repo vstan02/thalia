@@ -20,15 +20,17 @@
 #ifndef THALIA_PARSER_AST_VISITOR
 #define THALIA_PARSER_AST_VISITOR
 
-#include "parser/exprs.hpp"
+#include <vector>
+
+#include "parser/stmts.hpp"
 
 namespace thalia::parser {
 	class ast_visitor {
 		public:
-			explicit ast_visitor(exprs::expression* target): _target(target) {}
+			explicit ast_visitor(std::vector<stmts::statement*> target): _target(target) {}
 
 		protected:
-			exprs::expression* _target;
+			std::vector<stmts::statement*> _target;
 	};
 }
 

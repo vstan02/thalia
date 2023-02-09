@@ -26,11 +26,93 @@
 using namespace thalia::parser;
 
 extern void ast_view::print() {
-	print_expression(_target, 0);
-	std::cout << '\n';
+	std::size_t index = 0;
+	std::cout << "[";
+	for (parser::stmts::statement* node: _target) {
+		if (index++ > 0) {
+			std::cout << ',';
+		}
+		print_statement(node, 1);
+	}
+
+	if (index > 0 && index == _target.size()) {
+		std::cout << '\n';
+	}
+	std::cout << "]\n";
 }
 
-extern void ast_view::print_expression(exprs::expression *node, std::size_t deep) {
+extern void ast_view::print_statement(stmts::statement *node, std::size_t deep) {
+	using type = stmts::stmt_type;
+	if (node == nullptr) return;
+	std::cout << '\n';
+	switch (node->type) {
+		case type::PROGRAM:
+			return print_program_statement(static_cast<stmts::program*>(node), deep);
+		case type::PRINT:
+			return print_print_statement(static_cast<stmts::print*>(node), deep);
+		case type::BLOCK:
+			return print_block_statement(static_cast<stmts::block*>(node), deep);
+		case type::EXPRESSION:
+			return print_expression_statement(static_cast<stmts::expression*>(node), deep);
+	}
+}
+
+extern void ast_view::print_expression_statement(stmts::expression* node, std::size_t deep) {
+	std::cout << termcolor::bright_white << tab(deep);
+	print_name("Statement", "Expression");
+	std::cout << termcolor::bright_white << " {\n";
+	print_expression(node->target, deep + 1);
+	std::cout << '\n' << tab(deep) << '}';
+}
+
+extern void ast_view::print_print_statement(stmts::print* node, std::size_t deep) {
+	std::cout << termcolor::bright_white << tab(deep);
+	print_name("Statement", "Print");
+	std::cout << termcolor::bright_white << " [";
+	
+	std::size_t index = 0;
+	for (parser::exprs::expression* expr: node->target) {
+		if (index++ > 0) {
+			std::cout << ',';
+		}
+		std::cout << '\n';
+		print_expression(expr, deep + 1);
+	}
+
+	if (index > 0 && index == node->target.size()) {
+		std::cout << '\n';
+	}
+	std::cout << tab(deep) << ']';
+}
+
+extern void ast_view::print_block_statement(stmts::block* node, std::size_t deep) {
+	std::cout << termcolor::bright_white << tab(deep);
+	print_name("Statement", "Block");
+	std::cout << termcolor::bright_white << " [";
+	
+	std::size_t index = 0;
+	for (parser::stmts::statement* stmt: node->stmts) {
+		if (index++ > 0) {
+			std::cout << ',';
+		}
+		print_statement(stmt, deep + 1);
+	}
+
+	if (index > 0 && index == node->stmts.size()) {
+		std::cout << '\n';
+	}
+	std::cout << tab(deep) << ']';
+}
+
+extern void ast_view::print_program_statement(stmts::program* node, std::size_t deep) {
+	std::cout << termcolor::bright_white << tab(deep);
+	print_name("Statement", "Program");
+	std::cout << termcolor::bright_white << " {";
+	print_statement(node->target, deep + 1);
+	std::cout << '\n' << tab(deep) << '}';
+}
+
+extern void ast_view::print_expression(exprs::expression* node, std::size_t deep) {
 	using type = exprs::expr_type;
 	if (node == nullptr) return;
 	switch (node->type) {

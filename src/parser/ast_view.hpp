@@ -21,12 +21,13 @@
 #define THALIA_PARSER_AST_VIEW
 
 #include "parser/exprs.hpp"
+#include "parser/stmts.hpp"
 #include "parser/ast_visitor.hpp"
 
 namespace thalia::parser {
 	class ast_view: public ast_visitor {
 		public:
-			explicit ast_view(exprs::expression* target): ast_visitor(target) {}
+			explicit ast_view(std::vector<stmts::statement*> target): ast_visitor(target) {}
 
 			void print();
 
@@ -34,6 +35,12 @@ namespace thalia::parser {
 			[[nodiscard]] std::string tab(std::size_t deep = 0) const;
 
 			void print_name(const char* category, const char* name);
+
+			void print_statement(stmts::statement* node, std::size_t deep = 0);
+			void print_print_statement(stmts::print* node, std::size_t deep = 0);
+			void print_block_statement(stmts::block* node, std::size_t deep = 0);
+			void print_program_statement(stmts::program* node, std::size_t deep = 0);
+			void print_expression_statement(stmts::expression* node, std::size_t deep = 0);
 
 			void print_expression(exprs::expression* node, std::size_t deep = 0);
 			void print_assign_expression(exprs::assign* node, std::size_t deep = 0);

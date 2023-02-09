@@ -23,12 +23,13 @@
 #include <ostream>
 
 #include "parser/exprs.hpp"
+#include "parser/stmts.hpp"
 #include "parser/ast_visitor.hpp"
 
 namespace thalia::nasm {
 	class translator: public parser::ast_visitor {
 		public:
-			explicit translator(parser::exprs::expression* target)
+			explicit translator(std::vector<parser::stmts::statement*> target)
 				: ast_visitor(target), _index(0) {}
 
 			std::ostream& translate(std::ostream& out);
@@ -37,6 +38,12 @@ namespace thalia::nasm {
 			std::size_t _index;
 
 		private:
+			std::ostream& translate_statement(std::ostream& out, parser::stmts::statement* node);
+			std::ostream& translate_program_statement(std::ostream& out, parser::stmts::program* node);
+			std::ostream& translate_block_statement(std::ostream& out, parser::stmts::block* node);
+			std::ostream& translate_print_statement(std::ostream& out, parser::stmts::print* node);
+			std::ostream& translate_expression_statement(std::ostream& out, parser::stmts::expression* node);
+
 			std::ostream& translate_expression(std::ostream& out, parser::exprs::expression* node);
 			std::ostream& translate_assign_expression(std::ostream& out, parser::exprs::assign* node);
 			std::ostream& translate_binary_expression(std::ostream& out, parser::exprs::binary* node);

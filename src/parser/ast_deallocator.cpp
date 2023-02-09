@@ -21,6 +21,52 @@
 
 using namespace thalia::parser;
 
+extern void ast_deallocator::dealloc() {
+	for (stmts::statement* item: _target) {
+		dealloc_statement(item);
+	}
+}
+
+extern void ast_deallocator::dealloc_statement(stmts::statement* node) {
+	if (node == nullptr) return;
+	switch (node->type) {
+		case stmts::stmt_type::EXPRESSION:
+			return dealloc_expression_statement(static_cast<stmts::expression*>(node));
+		case stmts::stmt_type::BLOCK:
+			return dealloc_block_statement(static_cast<stmts::block*>(node));
+		case stmts::stmt_type::PRINT:
+			return dealloc_print_statement(static_cast<stmts::print*>(node));
+		case stmts::stmt_type::PROGRAM:
+			return dealloc_program_statement(static_cast<stmts::program*>(node));
+		default:
+			delete node;
+	}
+}
+
+extern void ast_deallocator::dealloc_expression_statement(stmts::expression* node) {
+	dealloc_expression(node->target);
+	delete node;
+}
+
+extern void ast_deallocator::dealloc_block_statement(stmts::block* node) {
+	for (stmts::statement* item: node->stmts) {
+		dealloc_statement(item);
+	}
+	delete node;
+}
+
+extern void ast_deallocator::dealloc_program_statement(stmts::program* node) {
+	dealloc_statement(node->target);
+	delete node;
+}
+
+extern void ast_deallocator::dealloc_print_statement(stmts::print* node) {
+	for (exprs::expression* item: node->target) {
+		dealloc_expression(item);
+	}
+	delete node;
+}
+
 extern void ast_deallocator::dealloc_expression(exprs::expression* node) {
 	if (node == nullptr) return;
 	switch (node->type) {

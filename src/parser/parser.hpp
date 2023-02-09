@@ -26,23 +26,31 @@
 
 #include "lexer/lexer.hpp"
 #include "parser/exprs.hpp"
+#include "parser/stmts.hpp"
 
 namespace thalia::parser {
 	class parser {
 		public:
 			explicit parser(const lexer::lexer& lexer)
-				: _target(lexer), _index(0), _tokens() {}
+				: _target(lexer), _index(0), _tokens(), _ast() {}
 
-			exprs::expression* parse();
+			std::vector<stmts::statement*> parse();
 
 		private:
 			lexer::lexer _target;
 			std::size_t _index;
 			std::vector<lexer::token> _tokens;
+			std::vector<stmts::statement*> _ast;
 
 		private:
 			bool match(std::vector<lexer::token_type>);
 			void consume(lexer::token_type, const char*);
+
+			stmts::statement* statement();
+			stmts::statement* print_statement();
+			stmts::statement* block_statement();
+			stmts::statement* expression_statement();
+			stmts::statement* program_declaration();
 
 			exprs::expression* primary_expression();
 			exprs::expression* unary_expression();
@@ -50,6 +58,8 @@ namespace thalia::parser {
 			exprs::expression* term_expression();
 			exprs::expression* comparison_expression();
 			exprs::expression* equality_expression();
+
+			stmts::statement* declaration() { return program_declaration(); }
 
 			exprs::expression* expression() { return equality_expression(); }
 

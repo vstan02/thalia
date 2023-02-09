@@ -55,6 +55,7 @@ namespace thalia::lexer {
 		NONE,
 		PROGRAM,
 		IDENTIFIER,
+		PRINT,
 		END
 	};
 

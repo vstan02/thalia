@@ -17,24 +17,76 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
-
 #include "parser/parser.hpp"
 #include "parser/exception.hpp"
 
 using namespace thalia::parser;
 
-extern exprs::expression* parser::parse() {
+extern std::vector<stmts::statement*> parser::parse() {
 	if (_tokens.empty()) {
 		_tokens = _target.scan();
 	}
-
+	
 	if (_tokens.size() < 2) {
-		return nullptr;
+		return _ast;
 	}
 
 	_index = 1;
-	return equality_expression();
+
+	if (_ast.empty()) {
+		while (!at_end()) {
+			_ast.push_back(declaration());
+		}
+	}
+	return _ast;
+}
+
+extern stmts::statement* parser::program_declaration() {
+	consume(lexer::token_type::PROGRAM, "Expect 'program'.");
+	if (!check(lexer::token_type::LEFT_BRACE)) {
+		throw exception("Expect '{' after 'program'.", _tokens[_index].line);
+	}
+	return new stmts::program(block_statement());
+}
+
+extern stmts::statement* parser::print_statement() {
+	advance();
+	std::vector<exprs::expression*> target;
+	target.push_back(expression());
+	while(check(lexer::token_type::COMMA)) {
+		advance();
+		target.push_back(expression());
+	}
+	consume(lexer::token_type::SEMICOLON, "Expect ';' after value.");
+	return new stmts::print(target);
+}
+
+extern stmts::statement* parser::block_statement() {
+	advance();
+	std::vector<stmts::statement*> stmts;
+	while (!check(lexer::token_type::RIGHT_BRACE)) {
+		stmts.push_back(statement());
+	}
+	consume(lexer::token_type::RIGHT_BRACE, "Expect '}' after block.");
+	return new stmts::block(stmts);
+}
+
+extern stmts::statement* parser::expression_statement() {
+	exprs::expression* target = expression();
+	consume(lexer::token_type::SEMICOLON, "Expect ';' after value.");
+	return new stmts::expression(target);
+}
+
+extern stmts::statement* parser::statement() {
+	using lexer::token_type;
+	switch (_tokens[_index].type) {
+		case token_type::PRINT:
+			return print_statement();
+		case token_type::LEFT_BRACE:
+			return block_statement();
+		default:
+			return expression_statement();
+	}
 }
 
 extern exprs::expression* parser::equality_expression() {

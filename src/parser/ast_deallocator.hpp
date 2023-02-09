@@ -25,12 +25,18 @@
 namespace thalia::parser {
 	class ast_deallocator: public ast_visitor {
 		public:
-			explicit ast_deallocator(exprs::expression* target)
+			explicit ast_deallocator(std::vector<stmts::statement*> target)
 				: ast_visitor(target) {}
 
-			void dealloc() { return dealloc_expression(_target); }
+			void dealloc();
 
 		private:
+      void dealloc_statement(stmts::statement* node);
+      void dealloc_program_statement(stmts::program* node);
+      void dealloc_block_statement(stmts::block* node);
+      void dealloc_print_statement(stmts::print* node);
+      void dealloc_expression_statement(stmts::expression* node);
+
 			void dealloc_expression(exprs::expression* node);
 			void dealloc_assign_expression(exprs::assign* node);
 			void dealloc_binary_expression(exprs::binary* node);
