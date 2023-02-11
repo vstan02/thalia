@@ -41,10 +41,10 @@ namespace thalia::parser::exprs {
 	};
 
 	struct assign: expression {
-		lexer::token name;
+		expression* name;
 		expression* value;
 
-		assign(lexer::token name, expression* value)
+		assign(expression* name, expression* value)
 			: expression(expr_type::ASSIGN), name(name), value(value) {}
 	};
 

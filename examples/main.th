@@ -1,7 +1,9 @@
+var x;
+
 program {
-	print 4;
-	print 3;
-	{
-		print 4;
+	each x in [10] {
+		if x % 2 == 0 {
+			print x;
+		}
 	}
 }

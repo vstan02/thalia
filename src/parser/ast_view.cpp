@@ -48,10 +48,18 @@ extern void ast_view::print_statement(stmts::statement *node, std::size_t deep) 
 	switch (node->type) {
 		case type::PROGRAM:
 			return print_program_statement(static_cast<stmts::program*>(node), deep);
+		case type::VAR:
+			return print_var_statement(static_cast<stmts::var*>(node), deep);
 		case type::PRINT:
 			return print_print_statement(static_cast<stmts::print*>(node), deep);
 		case type::BLOCK:
 			return print_block_statement(static_cast<stmts::block*>(node), deep);
+		case type::IF:
+			return print_if_statement(static_cast<stmts::if_*>(node), deep);
+		case type::WHILE:
+			return print_while_statement(static_cast<stmts::while_*>(node), deep);
+		case type::EACH:
+			return print_each_statement(static_cast<stmts::each*>(node), deep);
 		case type::EXPRESSION:
 			return print_expression_statement(static_cast<stmts::expression*>(node), deep);
 	}
@@ -85,6 +93,44 @@ extern void ast_view::print_print_statement(stmts::print* node, std::size_t deep
 	std::cout << tab(deep) << ']';
 }
 
+extern void ast_view::print_if_statement(stmts::if_* node, std::size_t deep) {
+	std::cout << termcolor::bright_white << tab(deep);
+	print_name("Statement", "If");
+	std::cout << termcolor::bright_white << " {\n";
+	print_expression(node->condition, deep + 1);
+	std::cout << ',';
+	print_statement(node->target, deep + 1);
+	std::cout << '\n' << tab(deep) << '}';
+}
+
+extern void ast_view::print_while_statement(stmts::while_* node, std::size_t deep) {
+	std::cout << termcolor::bright_white << tab(deep);
+	print_name("Statement", "While");
+	std::cout << termcolor::bright_white << " {\n";
+	print_expression(node->condition, deep + 1);
+	std::cout << ',';
+	print_statement(node->target, deep + 1);
+	std::cout << '\n' << tab(deep) << '}';
+}
+
+extern void ast_view::print_each_statement(stmts::each* node, std::size_t deep) {
+	std::cout << termcolor::bright_white << tab(deep);
+	print_name("Statement", "Each");
+	std::cout << termcolor::bright_white << " {\n";
+	print_expression(node->variable, deep + 1);
+	
+	if (node->from) {
+		std::cout << ",\n";
+		print_expression(node->from, deep + 1);
+	}
+	
+	std::cout << ",\n";
+	print_expression(node->to, deep + 1);
+	std::cout << ',';
+	print_statement(node->target, deep + 1);
+	std::cout << '\n' << tab(deep) << '}';
+}
+
 extern void ast_view::print_block_statement(stmts::block* node, std::size_t deep) {
 	std::cout << termcolor::bright_white << tab(deep);
 	print_name("Statement", "Block");
@@ -112,6 +158,13 @@ extern void ast_view::print_program_statement(stmts::program* node, std::size_t 
 	std::cout << '\n' << tab(deep) << '}';
 }
 
+extern void ast_view::print_var_statement(stmts::var* node, std::size_t deep) {
+	std::string name(node->name.start, node->name.size);
+	std::cout << termcolor::bright_white << tab(deep);
+	print_name("Statement", "Var");
+	std::cout << termcolor::bright_white << " { " << name << " }";
+}
+
 extern void ast_view::print_expression(exprs::expression* node, std::size_t deep) {
 	using type = exprs::expr_type;
 	if (node == nullptr) return;
@@ -132,10 +185,11 @@ extern void ast_view::print_expression(exprs::expression* node, std::size_t deep
 }
 
 extern void ast_view::print_assign_expression(exprs::assign* node, std::size_t deep) {
-	std::string name(node->name.start, node->name.size);
 	std::cout << termcolor::bright_white << tab(deep);
 	print_name("Expression", "Assign");
-	std::cout << termcolor::bright_white << " {\n" << tab(deep + 1) << "'" << name << "',\n";
+	std::cout << termcolor::bright_white << " {\n";
+	print_expression(node->name, deep + 1);
+	std::cout << ",\n";
 	print_expression(node->value, deep + 1);
 	std::cout << '\n' << tab(deep) << '}';
 }

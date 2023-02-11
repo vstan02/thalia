@@ -21,89 +21,99 @@
 
 using namespace thalia::nasm;
 
-static char NASM_START[] = ""
-	"global _start\n\n"
+static char NASM_DATA[] = ""
 	"section .data\n"
-	"PI equ 3\n"
-	"_SYS_EXIT_ equ 0x3c\n"
-	"_SYS_WRITE_ equ 0x1\n"
-	"_SYS_STDOUT_ equ 1\n\n"
-	"section .bss\n"
-	"_CHR_BSS_ resb 1\n\n"
-	"section .text\n";
+	"\tfalse equ 0\n"
+	"\ttrue equ 1\n"
+	"\tnull equ 0\n"
+	"\t_SYS_EXIT_ equ 0x3c\n"
+	"\t_SYS_WRITE_ equ 0x1\n"
+	"\t_SYS_STDOUT_ equ 1\n";
+
+static char NASM_BSS[] = ""
+	"\nsection .bss\n"
+	"\t_CHR_BSS_ resb 1\n";
 
 static char NASM_END[] = ""
 	"int_print:\n"
-	"push rax\n"
-	"push rbx\n"
-	"push rcx\n"
-	"push rdx\n"
-	"xor rcx, rcx\n"
-	"cmp rax, 0\n"
-	"jge .decomp\n"
+	"\tpush rax\n"
+	"\tpush rbx\n"
+	"\tpush rcx\n"
+	"\tpush rdx\n"
+	"\txor rcx, rcx\n"
+	"\tcmp rax, 0\n"
+	"\tjge .decomp\n"
 	".negate:\n"
-	"mov rdx, rax\n"
-	"mov rax, '-'\n"
-	"call chr_print\n"
-	"mov rax, rdx\n"
-	"neg rax\n"
+	"\tmov rdx, rax\n"
+	"\tmov rax, '-'\n"
+	"\tcall chr_print\n"
+	"\tmov rax, rdx\n"
+	"\tneg rax\n"
 	".decomp:\n"
-	"mov rbx, 10\n"
-	"xor rdx, rdx\n"
-	"div rbx\n"
-	"add rdx, '0'\n"
-	"push rdx\n"
-	"inc rcx\n"
-	"cmp rax, 0\n"
-	"je .print\n"
-	"jmp .decomp\n"
+	"\tmov rbx, 10\n"
+	"\txor rdx, rdx\n"
+	"\tdiv rbx\n"
+	"\tadd rdx, '0'\n"
+	"\tpush rdx\n"
+	"\tinc rcx\n"
+	"\tcmp rax, 0\n"
+	"\tje .print\n"
+	"\tjmp .decomp\n"
 	".print:\n"
-	"cmp rcx, 0\n"
-	"je .close\n"
-	"dec rcx\n"
-	"pop rax\n"
-	"call chr_print\n"
-	"jmp .print\n"
+	"\tcmp rcx, 0\n"
+	"\tje .close\n"
+	"\tdec rcx\n"
+	"\tpop rax\n"
+	"\tcall chr_print\n"
+	"\tjmp .print\n"
 	".close:\n"
-	"pop rdx\n"
-	"pop rcx\n"
-	"pop rbx\n"
-	"pop rax\n"
-	"ret\n\n"
+	"\tpop rdx\n"
+	"\tpop rcx\n"
+	"\tpop rbx\n"
+	"\tpop rax\n"
+	"\tret\n\n"
 	"eol_print:\n"
-	"push rax\n"
-	"mov rax, 0xA\n"
-	"call chr_print\n"
-	"pop rax\n"
-	"ret\n\n"
+	"\tpush rax\n"
+	"\tmov rax, 0xA\n"
+	"\tcall chr_print\n"
+	"\tpop rax\n"
+	"\tret\n\n"
 	"chr_print:\n"
-	"push rax\n"
-	"push rdi\n"
-	"push rsi\n"
-	"push rdx\n"
-	"push rcx\n"
-	"mov [_CHR_BSS_], al\n"
-	"mov rax, _SYS_WRITE_\n"
-	"mov rdi, _SYS_STDOUT_\n"
-	"mov rsi, _CHR_BSS_\n"
-	"mov rdx, 1\n"
-	"syscall\n"
-	"pop rcx\n"
-	"pop rdx\n"
-	"pop rsi\n"
-	"pop rdi\n"
-	"pop rax\n"
-	"ret\n\n"
+	"\tpush rax\n"
+	"\tpush rdi\n"
+	"\tpush rsi\n"
+	"\tpush rdx\n"
+	"\tpush rcx\n"
+	"\tmov [_CHR_BSS_], al\n"
+	"\tmov rax, _SYS_WRITE_\n"
+	"\tmov rdi, _SYS_STDOUT_\n"
+	"\tmov rsi, _CHR_BSS_\n"
+	"\tmov rdx, 1\n"
+	"\tsyscall\n"
+	"\tpop rcx\n"
+	"\tpop rdx\n"
+	"\tpop rsi\n"
+	"\tpop rdi\n"
+	"\tpop rax\n"
+	"\tret\n\n"
 	"sys_exit:\n"
-	"mov rax, _SYS_EXIT_\n"
-	"xor rdi, rdi\n"
-	"syscall\n";
+	"\tmov rax, _SYS_EXIT_\n"
+	"\txor rdi, rdi\n"
+	"\tsyscall\n";
 
 extern std::ostream& translator::translate(std::ostream& out) {
-	out << NASM_START;
+	out << "global _start\n\n";
+	out << NASM_DATA;
+	parser::stmts::statement* program = nullptr;
 	for (parser::stmts::statement* item: _target) {
+		if (item->type == parser::stmts::stmt_type::PROGRAM) {
+			program = item;
+			continue;
+		}
 		translate_statement(out, item);
 	}
+	out << NASM_BSS;
+	translate_statement(out, program);
 	return out << NASM_END;
 }
 
@@ -111,20 +121,69 @@ extern std::ostream& translator::translate_statement(std::ostream& out, parser::
 	if (node == nullptr) return out;
 	using namespace parser;
 	switch (node->type) {
+		case stmts::stmt_type::VAR:
+			return translate_var_statement(out, static_cast<stmts::var*>(node));
 		case stmts::stmt_type::PROGRAM:
 			return translate_program_statement(out, static_cast<stmts::program*>(node));
 		case stmts::stmt_type::BLOCK:
 			return translate_block_statement(out, static_cast<stmts::block*>(node));
 		case stmts::stmt_type::PRINT:
 			return translate_print_statement(out, static_cast<stmts::print*>(node));
+		case stmts::stmt_type::IF:
+			return translate_if_statement(out, static_cast<stmts::if_*>(node));
+		case stmts::stmt_type::WHILE:
+			return translate_while_statement(out, static_cast<stmts::while_*>(node));
+		case stmts::stmt_type::EACH:	
+			return translate_each_statement(out, static_cast<stmts::each*>(node));
 		case stmts::stmt_type::EXPRESSION:
 			return translate_expression_statement(out, static_cast<stmts::expression*>(node));
 	}
 	return out;
 }
 
+extern std::ostream& translator::translate_var_statement(std::ostream& out, parser::stmts::var* node) {
+	return out << '\t' << std::string(node->name.start, node->name.size) << " dq 0\n";
+}
+
+extern std::ostream& translator::translate_if_statement(std::ostream& out, parser::stmts::if_* node) {
+	translate_expression(out, node->condition);
+	out << "\ttest rax, rax\n\tje .cmp_stmt_" << ++_index << '\n';
+	translate_statement(out, node->target);
+	return out << ".cmp_stmt_" << _index << ":\n";
+}
+
+extern std::ostream& translator::translate_while_statement(std::ostream& out, parser::stmts::while_* node) {
+	std::size_t index = ++_index;
+	out << ".while_stmt_" << index << ":\n";
+	translate_expression(out, node->condition);
+	out << "\ttest rax, rax\n\tje .cmp_stmt_" << index << '\n';
+	translate_statement(out, node->target);
+	return out << "\tjmp .while_stmt_" << index << "\n.cmp_stmt_" << index << ":\n";
+}
+
+extern std::ostream& translator::translate_each_statement(std::ostream& out, parser::stmts::each* node) {
+	parser::exprs::variable* variable = static_cast<parser::exprs::variable*>(node->variable);
+	
+	if (node->from) {
+		translate_expression(out, node->from);
+	} else {
+		out << "\tpush 0\n";
+	}
+
+	out << "\tpop qword [" << std::string(variable->name.start, variable->name.size) << "]\n";
+
+	std::size_t index = ++_index;
+	out << ".each_stmt_" << index << ":\n";
+	translate_variable_expression(out, variable);
+	translate_expression(out, node->to);
+	out << "\tpop rbx\n\tpop rax\n\tcmp rax, rbx\n\tjge .cmp_stmt_" << index << '\n';
+	translate_statement(out, node->target);
+	out << "\tinc qword [" << std::string(variable->name.start, variable->name.size);
+	return out << "]\n\tjmp .each_stmt_" << index << "\n.cmp_stmt_" << index << ":\n";
+}
+
 extern std::ostream& translator::translate_program_statement(std::ostream& out, parser::stmts::program* node) {
-	return translate_statement(out << "_start:\n", node->target) << "call sys_exit\n\n";
+	return translate_statement(out << "\nsection .text\n_start:\n", node->target) << "\tcall sys_exit\n\n";
 }
 
 extern std::ostream& translator::translate_block_statement(std::ostream& out, parser::stmts::block* node) {
@@ -136,9 +195,9 @@ extern std::ostream& translator::translate_block_statement(std::ostream& out, pa
 
 extern std::ostream& translator::translate_print_statement(std::ostream& out, parser::stmts::print* node) {
 	for (parser::exprs::expression* item: node->target) {
-		translate_expression(out, item) << "pop rax\ncall int_print\nmov rax, ' '\ncall chr_print\n";
+		translate_expression(out, item) << "\tpop rax\n\tcall int_print\n\tmov rax, ' '\n\tcall chr_print\n";
 	}
-	return out << "call eol_print\n\n";
+	return out << "\tcall eol_print\n";
 }
 
 extern std::ostream& translator::translate_expression_statement(std::ostream& out, parser::stmts::expression* node) {
@@ -166,69 +225,75 @@ extern std::ostream& translator::translate_expression(std::ostream& out, parser:
 }
 
 extern std::ostream& translator::translate_assign_expression(std::ostream& out, parser::exprs::assign* node) {
-	return out;
+	parser::exprs::variable* variable = static_cast<parser::exprs::variable*>(node->name);
+	translate_expression(out, node->value);
+	out << "\tpop qword [" << std::string(variable->name.start, variable->name.size) << "]\n";
+	return translate_variable_expression(out, variable);
 }
 
 extern std::ostream& translator::translate_binary_expression(std::ostream& out, parser::exprs::binary* node) {
 	translate_expression(out, node->left);
 	translate_expression(out, node->right);
 
-	out << "pop rbx\npop rax\n";
+	out << "\tpop rbx\n\tpop rax\n";
 	switch (node->operation.type) {
 		case lexer::token_type::PLUS:
-			out << "add rax, rbx\n";
+			out << "\tadd rax, rbx\n";
 			break;
 		case lexer::token_type::MINUS:
-			out << "sub rax, rbx\n";
+			out << "\tsub rax, rbx\n";
 			break;
 		case lexer::token_type::STAR:
-			out << "imul rax, rbx\n";
+			out << "\timul rax, rbx\n";
 			break;
 		case lexer::token_type::SLASH:
-			out << "idiv rbx\n";
+			out << "\tidiv rbx\n";
+			break;
+		case lexer::token_type::PERCENT:
+			out << "\txor rdx, rdx\n\tidiv rbx\n\tmov rax, rdx\n";
 			break;
 		case lexer::token_type::EQUAL_EQUAL:
-			out << "mov rdx, 0\ncmp rax, rbx\njne .cmp_stmt_" << ++_index << '\n';
-			out << "mov rdx, 1\n.cmp_stmt_" << _index << ":\nmov rax, rdx\n";
+			out << "\tmov rdx, 0\n\tcmp rax, rbx\n\tjne .cmp_stmt_" << ++_index << '\n';
+			out << "\tmov rdx, 1\n.cmp_stmt_" << _index << ":\n\tmov rax, rdx\n";
 			break;
 		case lexer::token_type::BANG_EQUAL:
-			out << "mov rdx, 1\ncmp rax, rbx\njne .cmp_stmt_" << ++_index << '\n';
-			out << "mov rdx, 0\n.cmp_stmt_" << _index << ":\nmov rax, rdx\n";
+			out << "\tmov rdx, 1\n\tcmp rax, rbx\n\tjne .cmp_stmt_" << ++_index << '\n';
+			out << "\tmov rdx, 0\n.cmp_stmt_" << _index << ":\n\tmov rax, rdx\n";
 			break;
 		case lexer::token_type::GREATER_EQUAL:
-			out << "mov rdx, 0\ncmp rax, rbx\njl .cmp_stmt_" << ++_index << '\n';
-			out << "mov rdx, 1\n.cmp_stmt_" << _index << ":\nmov rax, rdx\n";
+			out << "\tmov rdx, 0\n\tcmp rax, rbx\n\tjl .cmp_stmt_" << ++_index << '\n';
+			out << "\tmov rdx, 1\n.cmp_stmt_" << _index << ":\n\tmov rax, rdx\n";
 			break;
 		case lexer::token_type::LESS:
-			out << "mov rdx, 1\ncmp rax, rbx\njl .cmp_stmt_" << ++_index << '\n';
-			out << "mov rdx, 0\n.cmp_stmt_" << _index << ":\nmov rax, rdx\n";
+			out << "\tmov rdx, 1\n\tcmp rax, rbx\n\tjl .cmp_stmt_" << ++_index << '\n';
+			out << "\tmov rdx, 0\n.cmp_stmt_" << _index << ":\n\tmov rax, rdx\n";
 			break;
 		case lexer::token_type::LESS_EQUAL:
-			out << "mov rdx, 0\ncmp rax, rbx\njg .cmp_stmt_" << ++_index << '\n';
-			out << "mov rdx, 1\n.cmp_stmt_" << _index << ":\nmov rax, rdx\n";
+			out << "\tmov rdx, 0\n\tcmp rax, rbx\n\tjg .cmp_stmt_" << ++_index << '\n';
+			out << "\tmov rdx, 1\n.cmp_stmt_" << _index << ":\n\tmov rax, rdx\n";
 			break;
 		case lexer::token_type::GREATER:
-			out << "mov rdx, 1\ncmp rax, rbx\njg .cmp_stmt_" << ++_index << '\n';
-			out << "mov rdx, 0\n.cmp_stmt_" << _index << ":\nmov rax, rdx\n";
+			out << "\tmov rdx, 1\n\tcmp rax, rbx\n\tjg .cmp_stmt_" << ++_index << '\n';
+			out << "\tmov rdx, 0\n.cmp_stmt_" << _index << ":\n\tmov rax, rdx\n";
 			break;
 		default: break;
 	}
-	return out << "push rax\n";
+	return out << "\tpush rax\n";
 }
 
 extern std::ostream& translator::translate_unary_expression(std::ostream& out, parser::exprs::unary* node) {
 	translate_expression(out, node->target);
-	out << "pop rax\n";
+	out << "\tpop rax\n";
 	switch (node->operation.type) {
 		case lexer::token_type::MINUS:
-			out << "neg rax\n";
+			out << "\tneg rax\n";
 			break;
 		case lexer::token_type::BANG:
-			out << "not rax\n";
+			out << "\tnot rax\n";
 			break;
 		default: break;
 	}
-	return out << "push rax\n";
+	return out << "\tpush rax\n";
 }
 
 extern std::ostream& translator::translate_grouping_expression(std::ostream& out, parser::exprs::grouping* node) {
@@ -236,9 +301,9 @@ extern std::ostream& translator::translate_grouping_expression(std::ostream& out
 }
 
 extern std::ostream& translator::translate_variable_expression(std::ostream& out, parser::exprs::variable* node) {
-	return out << "push " << std::string(node->name.start, node->name.size) << "\n";
+	return out << "\tpush qword [" << std::string(node->name.start, node->name.size) << "]\n";
 }
 
 extern std::ostream& translator::translate_literal_expression(std::ostream& out, parser::exprs::literal* node) {
-	return out << "push " << std::string(node->value.start, node->value.size) << "\n";
+	return out << "\tpush " << std::string(node->value.start, node->value.size) << "\n";
 }

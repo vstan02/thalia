@@ -41,8 +41,12 @@ namespace thalia::nasm {
 			std::ostream& translate_statement(std::ostream& out, parser::stmts::statement* node);
 			std::ostream& translate_program_statement(std::ostream& out, parser::stmts::program* node);
 			std::ostream& translate_block_statement(std::ostream& out, parser::stmts::block* node);
+			std::ostream& translate_var_statement(std::ostream& out, parser::stmts::var* node);
 			std::ostream& translate_print_statement(std::ostream& out, parser::stmts::print* node);
 			std::ostream& translate_expression_statement(std::ostream& out, parser::stmts::expression* node);
+			std::ostream& translate_if_statement(std::ostream& out, parser::stmts::if_* node);
+			std::ostream& translate_while_statement(std::ostream& out, parser::stmts::while_* node);
+			std::ostream& translate_each_statement(std::ostream& out, parser::stmts::each* node);
 
 			std::ostream& translate_expression(std::ostream& out, parser::exprs::expression* node);
 			std::ostream& translate_assign_expression(std::ostream& out, parser::exprs::assign* node);
