@@ -17,6 +17,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <utility>
+
 #include "parser/parser.hpp"
 #include "parser/exception.hpp"
 
@@ -39,6 +41,24 @@ extern std::vector<stmts::statement*> parser::parse() {
 		}
 	}
 	return _ast;
+}
+
+extern stmts::statement* parser::declaration() {
+	using lexer::token_type;
+	switch (_tokens[_index].type) {
+		case token_type::VAR:
+			return var_declaration();
+		default:
+			return program_declaration();
+	}
+}
+
+extern stmts::statement* parser::var_declaration() {
+	advance();
+	lexer::token token = _tokens[_index];
+	advance();
+	consume(lexer::token_type::SEMICOLON, "Expect ';' after value.");
+	return new stmts::var(token);
 }
 
 extern stmts::statement* parser::program_declaration() {
@@ -71,6 +91,45 @@ extern stmts::statement* parser::block_statement() {
 	return new stmts::block(stmts);
 }
 
+extern stmts::statement* parser::if_statement() {
+	advance();
+	exprs::expression* condition = expression();
+	if (!check(lexer::token_type::LEFT_BRACE)) {
+		throw exception("Expect '{' after 'if'.", _tokens[_index].line);
+	}
+	return new stmts::if_(condition, block_statement());
+}
+
+extern stmts::statement* parser::while_statement() {
+	advance();
+	exprs::expression* condition = expression();
+	if (!check(lexer::token_type::LEFT_BRACE)) {
+		throw exception("Expect '{' after 'while'.", _tokens[_index].line);
+	}
+	return new stmts::while_(condition, block_statement());
+}
+
+extern stmts::statement* parser::each_statement() {
+	using lexer::token_type;
+	advance();
+	consume(token_type::IDENTIFIER, "Expect a variable name after 'each'.");
+	exprs::variable* variable = new exprs::variable(_tokens[_index - 1]);
+	
+	consume(token_type::IN, "Expect the keyword 'in' after the variable in 'each'.");
+	consume(token_type::LEFT_BRACKET, "Expect '[' after 'in'.");
+	exprs::expression* to = expression();
+
+	exprs::expression* from = nullptr;
+	if (check(token_type::COMMA)) {
+		advance();
+		from = expression();
+		std::swap(from, to);
+	}
+	
+	consume(token_type::RIGHT_BRACKET, "Expect ']' after 'each' interval.");
+	return new stmts::each(variable, from, to, block_statement());
+}
+
 extern stmts::statement* parser::expression_statement() {
 	exprs::expression* target = expression();
 	consume(lexer::token_type::SEMICOLON, "Expect ';' after value.");
@@ -84,9 +143,45 @@ extern stmts::statement* parser::statement() {
 			return print_statement();
 		case token_type::LEFT_BRACE:
 			return block_statement();
+		case token_type::IF:
+			return if_statement();
+		case token_type::WHILE:
+			return while_statement();
+		case token_type::EACH:
+			return each_statement();
 		default:
 			return expression_statement();
 	}
+}
+
+extern exprs::expression* parser::assign_expression() {
+	using lexer::token_type;
+	exprs::expression* result = equality_expression();
+
+	if (!match({
+		token_type::EQUAL,
+		token_type::PLUS_EQUAL, 
+		token_type::MINUS_EQUAL,
+		token_type::SLASH_EQUAL,
+		token_type::STAR_EQUAL,
+		token_type::PERCENT_EQUAL 
+	})) {
+		return result;
+	}
+
+	if (result->type != exprs::expr_type::VARIABLE) {
+		throw exception("Invalid assignment target.", _tokens[_index - 2].line);
+	}
+
+	lexer::token token = _tokens[_index - 1];
+	if (token.type == token_type::EQUAL) {
+		return new exprs::assign(result, expression());
+	}
+
+	token.type = to_operation(token.type);
+	exprs::expression* value = new exprs::binary(token, result, expression());
+	exprs::expression* variable = new exprs::variable((static_cast<exprs::variable*>(result))->name);
+	return new exprs::assign(variable, value);
 }
 
 extern exprs::expression* parser::equality_expression() {
@@ -122,7 +217,7 @@ extern exprs::expression* parser::term_expression() {
 extern exprs::expression* parser::factor_expression() {
 	using lexer::token_type;
 	exprs::expression* result = unary_expression();
-	while (match({ token_type::STAR, token_type::SLASH })) {
+	while (match({ token_type::STAR, token_type::SLASH, token_type::PERCENT })) {
 		lexer::token token = _tokens[_index - 1];
 		result = new exprs::binary(token, result, unary_expression());
 	}
@@ -171,4 +266,22 @@ extern void parser::consume(lexer::token_type type, const char* message) {
 		return advance();
 	}
 	throw exception(message, _tokens[_index].line);
+}
+
+extern thalia::lexer::token_type parser::to_operation(lexer::token_type type) {
+	using lexer::token_type;
+	switch (type) {
+		case token_type::PLUS_EQUAL:	
+			return token_type::PLUS;
+		case token_type::MINUS_EQUAL:	
+			return token_type::MINUS;
+		case token_type::STAR_EQUAL:	
+			return token_type::STAR;
+		case token_type::SLASH_EQUAL:	
+			return token_type::SLASH;
+		case token_type::PERCENT_EQUAL:	
+			return token_type::PERCENT;
+		default:
+			return token_type::END;
+	}
 }

@@ -31,7 +31,11 @@ namespace thalia::parser::stmts {
 		PROGRAM,
 		EXPRESSION,
 		BLOCK,
-		PRINT
+		PRINT,
+    VAR,
+    IF,
+    WHILE,
+    EACH
 	};
 
 	struct statement {
@@ -66,6 +70,39 @@ namespace thalia::parser::stmts {
 
     program(statement* block)
       : statement(stmt_type::PROGRAM), target(block) {}
+  };
+
+  struct var: statement {
+    lexer::token name;
+
+    var(lexer::token name)
+      : statement(stmt_type::VAR), name(name) {}
+  };
+
+  struct if_: statement {
+    exprs::expression* condition;
+    statement* target;
+
+    if_(exprs::expression* condition, statement* block)
+      : statement(stmt_type::IF), condition(condition), target(block) {}
+  };
+
+  struct while_: statement {
+    exprs::expression* condition;
+    statement* target;
+
+    while_(exprs::expression* condition, statement* block)
+      : statement(stmt_type::WHILE), condition(condition), target(block) {}
+  };
+
+  struct each: statement {
+    exprs::expression* variable;
+    exprs::expression* from;
+    exprs::expression* to;
+    statement* target;
+
+    each(exprs::expression* variable, exprs::expression* from, exprs::expression* to, statement* block)
+      : statement(stmt_type::EACH), variable(variable), from(from), to(to), target(block) {}
   };
 }
 

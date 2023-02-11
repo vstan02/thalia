@@ -47,10 +47,15 @@ namespace thalia::parser {
 			void consume(lexer::token_type, const char*);
 
 			stmts::statement* statement();
+			stmts::statement* declaration();
 			stmts::statement* print_statement();
 			stmts::statement* block_statement();
 			stmts::statement* expression_statement();
+			stmts::statement* var_declaration();
 			stmts::statement* program_declaration();
+			stmts::statement* if_statement();
+			stmts::statement* while_statement();
+			stmts::statement* each_statement();
 
 			exprs::expression* primary_expression();
 			exprs::expression* unary_expression();
@@ -58,10 +63,11 @@ namespace thalia::parser {
 			exprs::expression* term_expression();
 			exprs::expression* comparison_expression();
 			exprs::expression* equality_expression();
+			exprs::expression* assign_expression();
 
-			stmts::statement* declaration() { return program_declaration(); }
+			exprs::expression* expression() { return assign_expression(); }
 
-			exprs::expression* expression() { return equality_expression(); }
+			lexer::token_type to_operation(lexer::token_type);
 
 			void advance() { !at_end() && (++_index); }
 

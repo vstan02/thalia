@@ -38,6 +38,12 @@ extern void ast_deallocator::dealloc_statement(stmts::statement* node) {
 			return dealloc_print_statement(static_cast<stmts::print*>(node));
 		case stmts::stmt_type::PROGRAM:
 			return dealloc_program_statement(static_cast<stmts::program*>(node));
+		case stmts::stmt_type::IF:
+			return dealloc_if_statement(static_cast<stmts::if_*>(node));
+		case stmts::stmt_type::WHILE:
+			return dealloc_while_statement(static_cast<stmts::while_*>(node));
+		case stmts::stmt_type::EACH:	
+			return dealloc_each_statement(static_cast<stmts::each*>(node));
 		default:
 			delete node;
 	}
@@ -56,6 +62,29 @@ extern void ast_deallocator::dealloc_block_statement(stmts::block* node) {
 }
 
 extern void ast_deallocator::dealloc_program_statement(stmts::program* node) {
+	dealloc_statement(node->target);
+	delete node;
+}
+
+extern void ast_deallocator::dealloc_if_statement(stmts::if_* node) {
+	dealloc_expression(node->condition);
+	dealloc_statement(node->target);
+	delete node;
+}
+
+extern void ast_deallocator::dealloc_while_statement(stmts::while_* node) {
+	dealloc_expression(node->condition);
+	dealloc_statement(node->target);
+	delete node;
+}
+
+extern void ast_deallocator::dealloc_each_statement(stmts::each* node) {
+	if (node->from) {
+		dealloc_expression(node->from);
+	}
+
+	dealloc_expression(node->variable);
+	dealloc_expression(node->to);
 	dealloc_statement(node->target);
 	delete node;
 }
@@ -84,6 +113,7 @@ extern void ast_deallocator::dealloc_expression(exprs::expression* node) {
 }
 
 extern void ast_deallocator::dealloc_assign_expression(exprs::assign* node) {
+	dealloc_expression(node->name);
 	dealloc_expression(node->value);
 	delete node;
 }

@@ -41,6 +41,10 @@ namespace thalia::parser {
 			void print_block_statement(stmts::block* node, std::size_t deep = 0);
 			void print_program_statement(stmts::program* node, std::size_t deep = 0);
 			void print_expression_statement(stmts::expression* node, std::size_t deep = 0);
+			void print_var_statement(stmts::var* node, std::size_t deep = 0);
+			void print_if_statement(stmts::if_* node, std::size_t deep = 0);
+			void print_while_statement(stmts::while_* node, std::size_t deep = 0);
+			void print_each_statement(stmts::each* node, std::size_t deep = 0);
 
 			void print_expression(exprs::expression* node, std::size_t deep = 0);
 			void print_assign_expression(exprs::assign* node, std::size_t deep = 0);

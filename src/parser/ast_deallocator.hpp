@@ -31,11 +31,14 @@ namespace thalia::parser {
 			void dealloc();
 
 		private:
-      void dealloc_statement(stmts::statement* node);
-      void dealloc_program_statement(stmts::program* node);
-      void dealloc_block_statement(stmts::block* node);
-      void dealloc_print_statement(stmts::print* node);
-      void dealloc_expression_statement(stmts::expression* node);
+			void dealloc_statement(stmts::statement* node);
+			void dealloc_program_statement(stmts::program* node);
+			void dealloc_block_statement(stmts::block* node);
+			void dealloc_print_statement(stmts::print* node);
+			void dealloc_expression_statement(stmts::expression* node);
+			void dealloc_if_statement(stmts::if_* node);
+			void dealloc_while_statement(stmts::while_* node);
+			void dealloc_each_statement(stmts::each* node);
 
 			void dealloc_expression(exprs::expression* node);
 			void dealloc_assign_expression(exprs::assign* node);

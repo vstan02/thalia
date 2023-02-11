@@ -30,12 +30,17 @@ struct keyword {
 	token_type type;
 };
 
-static const keyword keywords[5] = {
+static const keyword keywords[10] = {
 	{ "true", 4, token_type::TRUE },
 	{ "false", 5, token_type::FALSE },
 	{ "null", 4, token_type::NONE },
 	{ "program", 7, token_type::PROGRAM },
-	{ "print", 5, token_type::PRINT }
+	{ "print", 5, token_type::PRINT },
+	{ "var", 3, token_type::VAR },
+	{ "if", 2, token_type::IF },
+	{ "while", 5, token_type::WHILE },
+	{ "each", 4, token_type::EACH },
+	{ "in", 2, token_type::IN }
 };
 
 extern std::vector<token> lexer::scan() {
@@ -78,11 +83,11 @@ extern token lexer::next_token() {
 		case ',': return make_token(token_type::COMMA);
 		case '.': return make_token(token_type::DOT);
 		case ';': return make_token(token_type::SEMICOLON);
-		case '-': return make_token(token_type::MINUS);
-		case '+': return make_token(token_type::PLUS);
-		case '/': return make_token(token_type::SLASH);
-		case '*': return make_token(token_type::STAR);
-		case '%': return make_token(token_type::PERCENT);
+		case '-': return choose_token('=', token_type::MINUS_EQUAL, token_type::MINUS);
+		case '+': return choose_token('=', token_type::PLUS_EQUAL, token_type::PLUS);
+		case '/': return choose_token('=', token_type::SLASH_EQUAL, token_type::SLASH);
+		case '*': return choose_token('=', token_type::STAR_EQUAL, token_type::STAR);
+		case '%': return choose_token('=', token_type::PERCENT_EQUAL, token_type::PERCENT);
 		case '=': return choose_token('=', token_type::EQUAL_EQUAL, token_type::EQUAL);
 		case '!': return choose_token('=', token_type::BANG_EQUAL, token_type::BANG);
 		case '<': return choose_token('=', token_type::LESS_EQUAL, token_type::LESS);
