@@ -1,0 +1,10 @@
+extern std : : writeln ( i32 ) : i32 ; 
+
+const max = ( x : i32 , y : i32 ) : i32 = > { 
+return 0 ; 
+} ; 
+
+const main = ( ) : i32 = > { 
+std : : writeln ( 21 ) ; 
+return 0 ; 
+} ;

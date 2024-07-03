@@ -1,9 +1,22 @@
-var x;
+extern std::writeln(i32): i32;
 
-program {
-	each x in [10] {
-		if x % 2 == 0 {
-			print x;
-		}
-	}
-}
+const max = (x: i32, y: i32): i32 => {
+  return 0;
+};
+
+const main = (): i32 => {
+  std::writeln(21);
+  return 0;
+};
+
+/* 
+
+entry 0, 0
+mov qword [rsp], 45
+add [rsp], 6
+call std.writeln_i32
+mov eax, 0
+leave
+ret
+
+*/
