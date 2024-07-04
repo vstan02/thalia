@@ -17,20 +17,28 @@
 
 (ns thalia.core
   (:gen-class)
-  (:require [clojure.string :as string]
-            [cheshire.core :as json]
-            [thalia.lexer :as lexer]))
-
-(def prog
-  ["23 + 43 >= 43 + 23"])
-
-(defn string->json [s]
-  (json/generate-string s {:pretty true}))
+  (:require [thalia.nasm :as nasm]))
 
 (defn -main []
-  (->> prog
-       (string/join "\n")
-       (lexer/scan)
-       (string->json)
-       (println)))
+  (println
+   (nasm/translate
+    [{:type :STMT-PROGRAM
+      :body {:type :STMT-BLOCK
+             :stmts [{:type :STMT-PRINT
+                      :values [{:type :EXPR-BINARY
+                                :operation {:type :STAR}
+                                :left {:type :EXPR-UNARY
+                                       :operation {:type :MINUS}
+                                       :value {:type :EXPR-LITERAL
+                                               :token {:type :INT
+                                                       :value "124"}}}
+                                :right {:type :EXPR-GROUPING
+                                        :value {:type :EXPR-BINARY
+                                                :operation {:type :PLUS}
+                                                :left {:type :EXPR-LITERAL
+                                                       :token {:type :INT
+                                                               :value "35"}}
+                                                :right {:type :EXPR-LITERAL
+                                                        :token {:type :INT
+                                                                :value "106"}}}}}]}]}}])))
 
