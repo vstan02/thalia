@@ -19,6 +19,8 @@
   (:gen-class)
   (:require [clojure.string :as string]))
 
+(def make)
+
 (def NASM-DATA
   (str "section .data\n"
        "\tfalse equ 0\n"
@@ -99,8 +101,6 @@
        "\txor rdi, rdi\n"
        "\tsyscall\n"))
 
-(def make)
-
 (defn ^:private next! [label]
   (swap! label inc))
 
@@ -116,7 +116,7 @@
 (defn ^:private make-expr-unary [node label]
   (str (make (:value node) label)
        "\tpop rax\n"
-       (case (get-in node [:operation :type])
+       (case (get-in node [:operator :type])
          :MINUS "\tneg rax\n"
          :BANG "\tnot rax\n")
        "\tpush rax\n"))
@@ -125,7 +125,7 @@
   (str (make (:left node) label)
        (make (:right node) label)
        "\tpop rbx\n\tpop rax\n"
-       (case (get-in node [:operation :type])
+       (case (get-in node [:operator :type])
          :PLUS "\tadd rax, rbx\n"
          :MINUS "\tsub rax, rbx\n"
          :STAR "\timul rax, rbx\n"
@@ -147,7 +147,7 @@
 
 (defn ^:private make-expr-assign [node label]
   (str (make (:value node) label)
-       "\tpop qword [" (get-in node [:target :name :value]) "]\n"
+       "\tpop qword [" (get-in node [:target :token :value]) "]\n"
        (make (:target node) label)))
 
 (defn ^:private make-stmt-expression [node label]
@@ -166,7 +166,10 @@
        (map #(make % label))
        (string/join "")))
 
-(defn ^:private make-stmt-program [node label]
+(defn ^:private make-decl-variable [node _]
+  (str "\t" (get-in node [:token :value]) " dq 0\n"))
+
+(defn ^:private make-decl-program [node label]
   (str "\nsection .text\n_start:\n"
        (make (:body node) label)
        "\tcall sys_exit\n\n"))
@@ -181,18 +184,20 @@
    :STMT-EXPRESSION make-stmt-expression
    :STMT-PRINT make-stmt-print
    :STMT-BLOCK make-stmt-block
-   :STMT-PROGRAM make-stmt-program})
+   :DECL-VARIABLE make-decl-variable
+   :DECL-PROGRAM make-decl-program})
 
-(defn ^:private make [node label]
+(defn make [node label]
   ((make-funcs (:type node)) node label))
 
 (defn translate [nodes]
   (let [label (atom 0)
         program (->> nodes
-                     (filter #(= (:type %) :STMT-PROGRAM))
-                     (first))]
+                     (filter #(= (:type %) :DECL-PROGRAM))
+                     (first)
+                     (#(if % % {:type :DECL-PROGRAM :body {:type :STMT-BLOCK :stmts []}})))]
     (->> nodes
-         (filter #(not= (:type %) :STMT-PROGRAM))
+         (filter #(not= (:type %) :DECL-PROGRAM))
          (map #(make % label))
          (string/join "")
          (#(str "global _start\n\n"

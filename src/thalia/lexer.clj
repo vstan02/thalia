@@ -45,7 +45,10 @@
    "||" :PIPE-PIPE})
 
 (def ^:private kws-tokens
-  {"return" :RETURN
+  {"def" :VAR
+   "print" :PRINT
+   "program" :PROGRAM
+   "return" :RETURN
    "static" :STATIC
    "extern" :EXTERN})
 

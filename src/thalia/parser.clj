@@ -18,59 +18,185 @@
 (ns thalia.parser
   (:gen-class))
 
-(defn ^:private match [typ tokens rules]
+(def ^:private parse-expr)
+(def ^:private parse-stmt)
+
+(defn ^:private check [token types]
+  (contains? types (:type token)))
+
+(defn ^:private parse-pattern [typ tokens rules]
   (loop [rls rules
          tkns tokens
          errors []
          ast {:type typ}]
-    (if (or (empty? rls) (= (:type (first tkns)) :EOF))
+    (if (or (empty? rls) (empty? tkns))
       {:rest tkns :errors errors :ast ast}
       (let [rule (first rls)
             token (first tkns)]
         (if-not (nil? (:values rule))
-          (if (contains? (:values rule) (:type token))
-            (recur (rest rls) (rest tkns) errors (merge (when (:field rule) {(:field rule) token}) ast))
-            {:rest (rest tkns) :errors (conj errors {:type (:error rule) :token token}) :ast ast})
+          (if (check token (:values rule))
+            (recur (rest rls)
+                   (rest tkns)
+                   errors
+                   (merge (when (:field rule) {(:field rule) token}) ast))
+            {:rest (rest rls)
+             :errors (conj errors {:type (:error rule) :token token})
+             :ast ast})
           (let [res ((:function rule) tkns)]
-            (recur (rest rls) (:rest res) (concat errors (:errors res)) (merge {(:field rule) (:ast res)} ast))))))))
+            (recur (rest rls)
+                   (:rest res)
+                   (concat errors (:errors res))
+                   (merge {(:field rule) (:ast res)} ast))))))))
 
-(defn ^:private parse-decl-param [tokens]
-  (match :DECL_PARAM tokens
-         [{:values #{:ID} :error :INV_PARAM_TYPE :field :data-type}
-          {:values #{:ID} :error :INV_PARAM_NAME :field :name}]))
+(defn ^:private parse-args [tokens]
+  (let [res1 (parse-expr tokens)]
+    (loop [tkns (:rest res1)
+           errors (:errors res1)
+           nodes [(:ast res1)]]
+      (if-not (check (first tkns) #{:COMMA})
+        {:rest tkns :errors errors :ast nodes}
+        (let [res2 (->> tkns rest parse-expr)]
+          (recur (:rest res2) (concat errors (:errors res2)) (concat nodes [(:ast res2)])))))))
 
-(defn ^:private parse-decl-params [tokens]
-  (if (contains? #{:RPAREN :EOF} (:type (first tokens)))
-    {:rest tokens :errors [] :ast []}
-    (let [param (parse-decl-param tokens)]
-      (loop [tkns (:rest param)
-             errors (:errors param)
-             params [(:ast param)]]
-        (if (or (not= (:type (first tkns)) :COMMA) (seq errors))
-          {:rest tkns :errors errors :ast params}
-          (let [rst (rest tkns)
-                nxt (parse-decl-param rst)]
-            (recur rst (concat errors (:errors nxt)) (conj params (:ast nxt)))))))))
+(defn ^:private parse-expr-binary [tokens types parse-operand]
+  (let [res1 (parse-operand tokens)]
+    (loop [tkns (:rest res1)
+           errors (:errors res1)
+           node (:ast res1)]
+      (if-not (check (first tkns) types)
+        {:rest tkns :errors errors :ast node}
+        (let [res2 (parse-pattern :EXPR-BINARY tkns
+                                  [{:values (set types) :error :EXPECT-BINARY-OPERATOR :field :operator}
+                                   {:function parse-operand :field :right}])]
+          (recur (:rest res2) (concat errors (:errors res2)) (merge {:left node} (:ast res2))))))))
 
-(defn ^:private parse-decl-func [tokens]
-  (match :DECL_FUNC tokens
-         [{:values #{:EXTERN :STATIC} :error :INV_FUNC_CLASS :field :class}
-          {:values #{:ID} :error :INV_RET_TYPE :field :ret-type}
-          {:values #{:ID} :error :INV_FUNC_NAME :field :name}
-          {:values #{:LPAREN} :error :LPAREN_EXPECT}
-          {:function parse-decl-params :error :INV_FUNC_PARAMS :field :params}
-          {:values #{:RPAREN} :error :RPAREN_EXPECT}
-          {:values #{:SEMI} :error :SEMI_EXPECT}]))
+(defn ^:private parse-expr-primary [tokens]
+  (let [token (first tokens)]
+    (case (:type token)
+      :LPAREN
+      (parse-pattern :EXPR-GROUPING tokens
+                     [{:values #{:LPAREN} :error :EXPECT-LPAREN}
+                      {:function parse-expr :field :value}
+                      {:values #{:RPAREN} :error :EXPECT-RPAREN}])
+      :ID
+      (parse-pattern :EXPR-VARIABLE tokens
+                     [{:values #{:ID} :error :EXPECT-VARIABLE :field :token}])
+      (parse-pattern :EXPR-LITERAL tokens
+                     [{:values #{:INT} :error :EXPECT-LITERAL :field :token}]))))
+
+(defn ^:private parse-expr-unary [tokens]
+  (if-not (check (first tokens) #{:BANG :MINUS})
+    (parse-expr-primary tokens)
+    (parse-pattern :EXPR-UNARY tokens
+                   [{:values #{:MINUS :BANG} :error :EXPECT-UNARY-OPERATOR :field :operator}
+                    {:function parse-expr-unary :field :value}])))
+
+(defn ^:private parse-expr-factor [tokens]
+  (parse-expr-binary tokens
+                     #{:STAR :SLASH :PERCENT}
+                     parse-expr-unary))
+
+(defn ^:private parse-expr-term [tokens]
+  (parse-expr-binary tokens
+                     #{:PLUS :MINUS}
+                     parse-expr-factor))
+
+(defn ^:private parse-expr-comp [tokens]
+  (parse-expr-binary tokens
+                     #{:GREATER :LESS :GREATER-EQUAL :LESS-EQUAL}
+                     parse-expr-term))
+
+(defn ^:private parse-expr-equal [tokens]
+  (parse-expr-binary tokens
+                     #{:EQUAL-EQUAL :BANG-EQUAL}
+                     parse-expr-comp))
+
+(defn ^:private parse-expr-logic-and [tokens]
+  (parse-expr-binary tokens
+                     #{:AMPER-AMPER}
+                     parse-expr-equal))
+
+(defn ^:private parse-expr-logic-or [tokens]
+  (parse-expr-binary tokens
+                     #{:PIPE-PIPE}
+                     parse-expr-logic-and))
+
+(defn ^:private parse-expr-assign [tokens]
+  (let [res1 (parse-expr-logic-or tokens)]
+    (if-not (check (->> res1 :rest first) #{:EQUAL})
+      res1
+      (let [res2 (->> res1 :rest rest parse-expr)]
+        {:rest (:rest res2)
+         :errors (concat (:errors res1) (:errors res2))
+         :ast {:type :EXPR-ASSIGN
+               :target (:ast res1)
+               :value (:ast res2)}}))))
+
+(defn ^:private parse-expr [tokens]
+  (parse-expr-assign tokens))
+
+(defn ^:private parse-stmt-expression [tokens]
+  (parse-pattern :STMT-EXPRESSION tokens
+                 [{:function parse-expr :field :value}
+                  {:values #{:SEMI} :error :EXPECT-SEMI}]))
+
+(defn ^:private parse-stmt-print [tokens]
+  (->> [{:values #{:PRINT} :error :EXPECT-PRINT}
+        (when-not (check (second tokens) #{:SEMI})
+          {:function parse-args :field :values})
+        {:values #{:SEMI} :error :EXPECT-SEMI}]
+       (filter some?)
+       (parse-pattern :STMT-PRINT tokens)
+       ((fn [res] {:rest (:rest res)
+                   :errors (:errors res)
+                   :ast (merge {:values []} (:ast res))}))))
+
+(defn ^:private parse-stmt-block [tokens]
+  (if-not (check (first tokens) #{:LBRACE})
+    {:rest tokens :errors {:type :EXPECT-LBRACE :token (first tokens)} :ast {:type :STMT-BLOCK}}
+    (loop [tkns (rest tokens)
+           errors []
+           stmts []]
+      (cond
+        (check (first tkns) #{:RBRACE})
+        {:rest (rest tkns) :errors errors :ast {:type :STMT-BLOCK :stmts stmts}}
+        (check (first tkns) #{:EOF})
+        {:rest tkns :errors [{:type :EXPECT-RBRACE :token (first tkns)}] :ast {:type :STMT-BLOCK}}
+        :else
+        (let [stmt (parse-stmt tkns)]
+          (recur (:rest stmt) (concat errors (:errors stmt)) (concat stmts [(:ast stmt)])))))))
+
+(defn ^:private parse-stmt [tokens]
+  (case (->> tokens first :type)
+    :PRINT (parse-stmt-print tokens)
+    :LBRACE (parse-stmt-block tokens)
+    (parse-stmt-expression tokens)))
+
+(defn ^:private parse-decl-variable [tokens]
+  (parse-pattern :DECL-VARIABLE tokens
+                 [{:values #{:VAR} :error :EXPECT-VAR}
+                  {:values #{:ID} :error :EXPECT-ID :field :token}
+                  {:values #{:SEMI} :error :EXPECT-SEMI}]))
+
+(defn ^:private parse-decl-program [tokens]
+  (parse-pattern :DECL-PROGRAM tokens
+                 [{:values #{:PROGRAM} :error :EXPECT-PROGRAM}
+                  {:function parse-stmt-block :field :body}]))
 
 (defn ^:private parse-decl [tokens]
-  (parse-decl-func tokens))
+  (case (->> tokens first :type)
+    :PROGRAM (parse-decl-program tokens)
+    :VAR (parse-decl-variable tokens)
+    {:rest (drop-while #(not (check % #{:VAR :PROGRAM})) tokens)
+     :errors [{:type :INVAL-DECL :token (first tokens)}]
+     :ast {}}))
 
 (defn parse [tokens]
   (loop [tkns tokens
          errors []
-         ast []]
-    (if (= (:type (first tkns)) :EOF)
-      {:errors errors :ast ast}
+         nodes []]
+    (if (or (= (:type (first tkns)) :EOF) (empty? tkns))
+      {:errors errors :ast nodes}
       (let [decl (parse-decl tkns)]
-        (recur (:rest decl) (concat errors (:errors decl)) (conj ast (:ast decl)))))))
+        (recur (:rest decl) (concat errors (:errors decl)) (conj nodes (:ast decl)))))))
 

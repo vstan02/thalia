@@ -1,1 +1,9 @@
-- - 4
+def x;
+def y;
+
+program {
+  x = 34;
+  y = 54;
+  print (x + y), (x * x + y * y);
+}
+

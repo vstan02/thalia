@@ -17,28 +17,17 @@
 
 (ns thalia.core
   (:gen-class)
-  (:require [thalia.nasm :as nasm]))
+  (:require [thalia.nasm :as nasm]
+            [thalia.lexer :as lexer]
+            [thalia.parser :as parser]))
 
-(defn -main []
-  (println
-   (nasm/translate
-    [{:type :STMT-PROGRAM
-      :body {:type :STMT-BLOCK
-             :stmts [{:type :STMT-PRINT
-                      :values [{:type :EXPR-BINARY
-                                :operation {:type :STAR}
-                                :left {:type :EXPR-UNARY
-                                       :operation {:type :MINUS}
-                                       :value {:type :EXPR-LITERAL
-                                               :token {:type :INT
-                                                       :value "124"}}}
-                                :right {:type :EXPR-GROUPING
-                                        :value {:type :EXPR-BINARY
-                                                :operation {:type :PLUS}
-                                                :left {:type :EXPR-LITERAL
-                                                       :token {:type :INT
-                                                               :value "35"}}
-                                                :right {:type :EXPR-LITERAL
-                                                        :token {:type :INT
-                                                                :value "106"}}}}}]}]}}])))
+(defn -main [& args]
+  (->> (first args)
+       (slurp)
+       (lexer/scan)
+       (:tokens)
+       (parser/parse)
+       (:ast)
+       (nasm/translate)
+       (println)))
 
