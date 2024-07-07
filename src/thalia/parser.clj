@@ -18,8 +18,8 @@
 (ns thalia.parser
   (:gen-class))
 
-(def ^:private parse-expr)
-(def ^:private parse-stmt)
+(def ^:private parse-expr nil)
+(def ^:private parse-stmt nil)
 
 (defn ^:private check [token types]
   (contains? types (:type token)))
@@ -47,6 +47,16 @@
                    (:rest res)
                    (concat errors (:errors res))
                    (merge {(:field rule) (:ast res)} ast))))))))
+
+(defn ^:private parse-each-values [tokens]
+  (let [value1 (parse-expr tokens)
+        tkns1 (:rest value1)]
+    (if (check (first tkns1) #{:COLON})
+      (let [value2 (->> tkns1 rest parse-expr)]
+        {:rest (:rest value2)
+         :errors (concat (:errors value1) (:errors value2))
+         :ast {:from (:ast value1) :to (:ast value2)}})
+      {:rest tkns1 :errors (:errors value1) :ast {:to (:ast value1)}})))
 
 (defn ^:private parse-args [tokens]
   (let [res1 (parse-expr tokens)]
@@ -166,10 +176,35 @@
         (let [stmt (parse-stmt tkns)]
           (recur (:rest stmt) (concat errors (:errors stmt)) (concat stmts [(:ast stmt)])))))))
 
+(defn ^:private parse-stmt-if [tokens]
+  (parse-pattern :STMT-IF tokens
+                 [{:values #{:IF} :error :EXPECT-IF}
+                  {:function parse-expr :field :condition}
+                  {:function parse-stmt-block :field :body}]))
+
+(defn ^:private parse-stmt-while [tokens]
+  (parse-pattern :STMT-WHILE tokens
+                 [{:values #{:WHILE} :error :EXPECT-WHILE}
+                  {:function parse-expr :field :condition}
+                  {:function parse-stmt-block :field :body}]))
+
+(defn ^:private parse-stmt-each [tokens]
+  (parse-pattern :STMT-EACH tokens
+                 [{:values #{:EACH} :error :EXPECT-EACH}
+                  {:values #{:ID} :error :EXPECT-ID :field :target}
+                  {:values #{:IN} :error :EXPECT-IN}
+                  {:values #{:LBRACKET} :error :EXPECT-LBRACKET}
+                  {:function parse-each-values :field :values}
+                  {:values #{:RBRACKET} :error :EXPECT-RBRACKET}
+                  {:function parse-stmt-block :field :body}]))
+
 (defn ^:private parse-stmt [tokens]
   (case (->> tokens first :type)
     :PRINT (parse-stmt-print tokens)
     :LBRACE (parse-stmt-block tokens)
+    :IF (parse-stmt-if tokens)
+    :WHILE (parse-stmt-while tokens)
+    :EACH (parse-stmt-each tokens)
     (parse-stmt-expression tokens)))
 
 (defn ^:private parse-decl-variable [tokens]

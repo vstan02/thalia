@@ -24,6 +24,8 @@
    ")" :RPAREN
    "{" :LBRACE
    "}" :RBRACE
+   "[" :LBRACKET
+   "]" :RBRACKET
    "," :COMMA
    ";" :SEMI
    ":" :COLON
@@ -48,6 +50,12 @@
   {"def" :VAR
    "print" :PRINT
    "program" :PROGRAM
+   "if" :IF
+   "else" :ELSE
+   "elif" :ELIF
+   "while" :WHILE
+   "each" :EACH
+   "in" :IN
    "return" :RETURN
    "static" :STATIC
    "extern" :EXTERN})

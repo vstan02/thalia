@@ -19,7 +19,7 @@
   (:gen-class)
   (:require [clojure.string :as string]))
 
-(def make)
+(def ^:private make nil)
 
 (def NASM-DATA
   (str "section .data\n"
@@ -166,6 +166,38 @@
        (map #(make % label))
        (string/join "")))
 
+(defn ^:private make-stmt-if [node label]
+  (let [lbl (next! label)]
+    (str (make (:condition node) label)
+         "\ttest rax, rax\n\tje .ll" lbl "\n"
+         (make (:body node) label)
+         ".ll" lbl ":\n")))
+
+(defn ^:private make-stmt-while [node label]
+  (let [lbl1 (next! label)
+        lbl2 (next! label)]
+    (str ".ll" lbl1 ":\n"
+         (make (:condition node) label)
+         "\ttest rax, rax\n\tje .ll" lbl2 "\n"
+         (make (:body node) label)
+         "\tjmp .ll" lbl1 "\n.ll" lbl2 ":\n")))
+
+(defn ^:private make-stmt-each [node label]
+  (let [values (:values node)
+        id (get-in node [:target :value])
+        lbl1 (next! label)
+        lbl2 (next! label)]
+    (str (if (:from values)
+           (make (:from values) label)
+           "\tpush 0\n")
+         "\tpop qword [" id "]\n"
+         ".ll" lbl1 ":\n"
+         "\tpush qword [" id "]\n"
+         (make (:to values) label)
+         "\tpop rbx\n\tpop rax\n\tcmp rax, rbx\n\tjge .ll" lbl2 "\n"
+         (make (:body node) label)
+         "\tinc qword [" id "]\n\tjmp .ll" lbl1 "\n.ll" lbl2 ":\n")))
+
 (defn ^:private make-decl-variable [node _]
   (str "\t" (get-in node [:token :value]) " dq 0\n"))
 
@@ -184,10 +216,13 @@
    :STMT-EXPRESSION make-stmt-expression
    :STMT-PRINT make-stmt-print
    :STMT-BLOCK make-stmt-block
+   :STMT-IF make-stmt-if
+   :STMT-WHILE make-stmt-while
+   :STMT-EACH make-stmt-each
    :DECL-VARIABLE make-decl-variable
    :DECL-PROGRAM make-decl-program})
 
-(defn make [node label]
+(defn ^:private make [node label]
   ((make-funcs (:type node)) node label))
 
 (defn translate [nodes]

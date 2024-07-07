@@ -1,9 +1,18 @@
-def x;
-def y;
+def i;
 
 program {
-  x = 34;
-  y = 54;
-  print (x + y), (x * x + y * y);
+  i = 0;
+  while i < 10 {
+    if i % 2 == 0 {
+      print i;
+    }
+    i = i + 1;
+  }
+
+  each i in [10] {
+    if i % 2 == 0 {
+      print i;
+    }
+  }
 }
 
