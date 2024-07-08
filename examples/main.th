@@ -9,7 +9,7 @@ const main = (): i32 => {
   return 0;
 };
 
-/* 
+/*
 
 entry 0, 0
 mov qword [rsp], 45
@@ -20,3 +20,4 @@ leave
 ret
 
 */
+
