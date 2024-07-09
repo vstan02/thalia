@@ -70,6 +70,7 @@ _start:
 	pop rax
 	jmp .ll1
 .ll2:
+	call eol_print
 	push 0
 	pop qword [i]
 .ll6:
@@ -80,33 +81,14 @@ _start:
 	cmp rax, rbx
 	jge .ll7
 	push qword [i]
-	push 2
-	pop rbx
-	pop rax
-	xor rdx, rdx
-	idiv rbx
-	mov rax, rdx
-	push rax
-	push 0
-	pop rbx
-	pop rax
-	mov rdx, 0
-	cmp rax, rbx
-	jne .ll9
-	mov rdx, 1
-.ll9:
-	mov rax, rdx
-	push rax
-	test rax, rax
-	je .ll8
-	push qword [i]
 	pop rax
 	call int_print
 	mov rax, ' '
 	call chr_print
 	call eol_print
-.ll8:
-	inc qword [i]
+	push 2
+	pop rax
+	add qword [i], rax
 	jmp .ll6
 .ll7:
 	call sys_exit

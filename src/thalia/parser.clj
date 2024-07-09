@@ -84,10 +84,16 @@
   (let [value1 (parse-expr tokens)
         tokens1 (:rest value1)]
     (if (token/check (first tokens1) #{:COLON})
-      (let [value2 (->> tokens1 rest parse-expr)]
-        {:ast {:from (:ast value1) :to (:ast value2)}
-         :errors (concat (:errors value1) (:errors value2))
-         :rest (:rest value2)})
+      (let [value2 (->> tokens1 rest parse-expr)
+            tokens2 (:rest value2)]
+        (if (token/check (first tokens2) #{:COLON})
+          (let [value3 (->> tokens2 rest parse-expr)]
+            {:ast {:from (:ast value1) :to (:ast value3) :step (:ast value2)}
+             :errors (concat (:errors value1) (:errors value2) (:errors value3))
+             :rest (:rest value3)})
+          {:ast {:from (:ast value1) :to (:ast value2)}
+           :errors (concat (:errors value1) (:errors value2))
+           :rest (:rest value2)}))
       {:ast {:to (:ast value1)} :errors (:errors value1) :rest tokens1})))
 
 (defn ^:private parse-expr-primary [tokens]

@@ -9,10 +9,10 @@ program {
     i = i + 1;
   }
 
-  each i in [10] {
-    if i % 2 == 0 {
-      print i;
-    }
+  print;
+
+  each i in [0:2:10] {
+    print i;
   }
 }
 

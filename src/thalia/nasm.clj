@@ -196,7 +196,11 @@
          (make (:to values) label)
          "\tpop rbx\n\tpop rax\n\tcmp rax, rbx\n\tjge .ll" lbl2 "\n"
          (make (:body node) label)
-         "\tinc qword [" id "]\n\tjmp .ll" lbl1 "\n.ll" lbl2 ":\n")))
+         (if (:step values)
+           (str (make (:step values) label)
+                "\tpop rax\n\tadd qword [" id "], rax\n")
+           (str "\tinc qword [" id "]\n"))
+         "\tjmp .ll" lbl1 "\n.ll" lbl2 ":\n")))
 
 (defn ^:private make-decl-variable [node _]
   (str "\t" (get-in node [:token :value]) " dq 0\n"))
