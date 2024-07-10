@@ -187,6 +187,17 @@
                    :errors (:errors res)
                    :ast (merge {:values []} (:ast res))}))))
 
+(defn ^:private parse-stmt-println [tokens]
+  (->> [{:values #{:PRINTLN} :error :EXPECT-PRINTLN}
+        (when-not (token/check (second tokens) #{:SEMI})
+          {:function (gen-parse-repeated #{:COMMA} parse-expr) :field :values})
+        {:values #{:SEMI} :error :EXPECT-SEMI}]
+       (filter some?)
+       (parse-pattern :STMT-PRINTLN tokens)
+       ((fn [res] {:rest (:rest res)
+                   :errors (:errors res)
+                   :ast (merge {:values []} (:ast res))}))))
+
 (defn ^:private parse-stmt-block [tokens]
   (if-not (token/check (first tokens) #{:LBRACE})
     {:ast {:type :STMT-BLOCK}
@@ -211,11 +222,21 @@
                  (:rest res)))))))
 
 (defn ^:private parse-stmt-if [tokens]
-  (parse-pattern
-   :STMT-IF tokens
-   [{:values #{:IF} :error :EXPECT-IF}
-    {:function parse-expr :field :condition}
-    {:function parse-stmt-block :field :body}]))
+  (let [value1 (parse-pattern
+                :STMT-IF tokens
+                [{:values #{:IF} :error :EXPECT-IF}
+                 {:function parse-expr :field :condition}
+                 {:function parse-stmt-block :field :body}])
+        tokens1 (:rest value1)]
+    (if-not (token/check (first tokens1) #{:ELSE})
+      value1
+      (let [tokens2 (rest tokens1)
+            value2 (if (token/check (first tokens2) #{:IF})
+                     (parse-stmt-if tokens2)
+                     (parse-stmt-block tokens2))]
+        {:ast (merge (:ast value1) {:else (:ast value2)})
+         :errors (concat (:errors value1) (:errors value2))
+         :rest (:rest value2)}))))
 
 (defn ^:private parse-stmt-while [tokens]
   (parse-pattern
@@ -238,6 +259,7 @@
 (defn ^:private parse-stmt [tokens]
   (case (->> tokens first :type)
     :PRINT (parse-stmt-print tokens)
+    :PRINTLN (parse-stmt-println tokens)
     :LBRACE (parse-stmt-block tokens)
     :IF (parse-stmt-if tokens)
     :WHILE (parse-stmt-while tokens)

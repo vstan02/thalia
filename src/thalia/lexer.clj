@@ -50,10 +50,10 @@
 (def ^:private kws-tokens
   {"def" :VAR
    "print" :PRINT
+   "println" :PRINTLN
    "program" :PROGRAM
    "if" :IF
    "else" :ELSE
-   "elif" :ELIF
    "while" :WHILE
    "each" :EACH
    "in" :IN

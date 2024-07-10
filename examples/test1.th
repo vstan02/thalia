@@ -1,1 +1,19 @@
-program() test and b23 32
+def n;
+def i;
+def j;
+
+program {
+  n = 5;
+
+  each i in [n] {
+    each j in [n - i] {
+      print 0;
+    }
+    each j in [i + 1] {
+      print 1;
+    }
+
+    println;
+  }
+}
+

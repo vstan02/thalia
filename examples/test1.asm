@@ -1,4 +1,3 @@
-
 global _start
 
 section .data
@@ -8,52 +7,76 @@ section .data
 	_SYS_EXIT_ equ 0x3c
 	_SYS_WRITE_ equ 0x1
 	_SYS_STDOUT_ equ 1
-	x dq 0
+	n dq 0
+	i dq 0
+	j dq 0
 
 section .bss
 	_CHR_BSS_ resb 1
 
 section .text
 _start:
+	push 5
+	pop qword [n]
+	push qword [n]
+	pop rax
 	push 0
-	pop qword [x]
-.each_stmt_1:
-	push qword [x]
-	push 10
+	pop qword [i]
+.ll1:
+	push qword [i]
+	push qword [n]
 	pop rbx
 	pop rax
 	cmp rax, rbx
-	jge .cmp_stmt_1
-	push qword [x]
-	push 2
-	pop rbx
-	pop rax
-	xor rdx, rdx
-	idiv rbx
-	mov rax, rdx
-	push rax
+	jge .ll2
 	push 0
+	pop qword [j]
+.ll3:
+	push qword [j]
+	push qword [n]
+	push qword [i]
 	pop rbx
 	pop rax
-	mov rdx, 0
-	cmp rax, rbx
-	jne .cmp_stmt_2
-	mov rdx, 1
-.cmp_stmt_2:
-	mov rax, rdx
+	sub rax, rbx
 	push rax
-	test rax, rax
-	je .cmp_stmt_3
-	push qword [x]
+	pop rbx
+	pop rax
+	cmp rax, rbx
+	jge .ll4
+	push 0
 	pop rax
 	call int_print
 	mov rax, ' '
 	call chr_print
+	inc qword [j]
+	jmp .ll3
+.ll4:
+	push 0
+	pop qword [j]
+.ll5:
+	push qword [j]
+	push qword [i]
+	push 1
+	pop rbx
+	pop rax
+	add rax, rbx
+	push rax
+	pop rbx
+	pop rax
+	cmp rax, rbx
+	jge .ll6
+	push 1
+	pop rax
+	call int_print
+	mov rax, ' '
+	call chr_print
+	inc qword [j]
+	jmp .ll5
+.ll6:
 	call eol_print
-.cmp_stmt_3:
-	inc qword [x]
-	jmp .each_stmt_1
-.cmp_stmt_1:
+	inc qword [i]
+	jmp .ll1
+.ll2:
 	call sys_exit
 
 int_print:
@@ -124,3 +147,4 @@ sys_exit:
 	mov rax, _SYS_EXIT_
 	xor rdi, rdi
 	syscall
+

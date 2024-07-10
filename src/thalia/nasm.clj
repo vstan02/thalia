@@ -158,6 +158,12 @@
   (->> (:values node)
        (map #(str (make % label)
                   "\tpop rax\n\tcall int_print\n\tmov rax, ' '\n\tcall chr_print\n"))
+       (string/join "")))
+
+(defn ^:private make-stmt-println [node label]
+  (->> (:values node)
+       (map #(str (make % label)
+                  "\tpop rax\n\tcall int_print\n\tmov rax, ' '\n\tcall chr_print\n"))
        (string/join "")
        (#(str % "\tcall eol_print\n"))))
 
@@ -167,11 +173,16 @@
        (string/join "")))
 
 (defn ^:private make-stmt-if [node label]
-  (let [lbl (next! label)]
+  (let [lbl1 (next! label)]
     (str (make (:condition node) label)
-         "\ttest rax, rax\n\tje .ll" lbl "\n"
+         "\ttest rax, rax\n\tje .ll" lbl1 "\n"
          (make (:body node) label)
-         ".ll" lbl ":\n")))
+         (if (:else node)
+           (let [lbl2 (next! label)]
+             (str "\tjmp .ll" lbl2 "\n.ll" lbl1 ":\n"
+                  (make (:else node) label)
+                  ".ll" lbl2 ":\n"))
+           (str ".ll" lbl1 ":\n")))))
 
 (defn ^:private make-stmt-while [node label]
   (let [lbl1 (next! label)
@@ -219,6 +230,7 @@
    :EXPR-ASSIGN make-expr-assign
    :STMT-EXPRESSION make-stmt-expression
    :STMT-PRINT make-stmt-print
+   :STMT-PRINTLN make-stmt-println
    :STMT-BLOCK make-stmt-block
    :STMT-IF make-stmt-if
    :STMT-WHILE make-stmt-while
