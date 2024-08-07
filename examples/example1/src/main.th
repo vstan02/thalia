@@ -1,0 +1,8 @@
+def i;
+
+program {
+  each i in [0:2:10] {
+    println i;
+  }
+}
+

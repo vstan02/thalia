@@ -17,17 +17,79 @@
 
 (ns thalia.core
   (:gen-class)
-  (:require [thalia.nasm :as nasm]
+  (:require [babashka.fs :as fs]
+            [babashka.process :as process]
+            [cheshire.core :as json]
+            [clojure.java.io :as io]
+            [clojure.string :as string]
+            [thalia.nasm :as nasm]
             [thalia.lexer :as lexer]
             [thalia.parser :as parser]))
 
+(defn path-resolve [parent file]
+  (->> file (fs/path parent) fs/canonicalize str))
+
+(defn parse-cfg [path]
+  (when-not path
+    (throw (Exception. "Invalid config path.")))
+  (let [parent (fs/parent path)
+        cfg (json/parse-string (slurp path) true)]
+    (when-not (->> [:src :dest :target]
+                   (map #(% cfg))
+                   (filter nil?)
+                   (empty?))
+      (throw (Exception. "Fields 'src', 'dest' and 'target' are required.")))
+    (let [dest (->> cfg :dest (path-resolve parent))]
+      (merge
+       {:cc "nasm -felf64"}
+       {:src (->> cfg :src (path-resolve parent))
+        :dest dest
+        :target (->> cfg :target (path-resolve dest))}))))
+
+(defn src->asm [cfg src]
+  (println "Compiling thalia files to assembly...")
+  (let [dest (->> src
+                  (#(string/replace % (:src cfg) (:dest cfg)))
+                  (#(string/replace % ".th" ".asm")))]
+    (->> (slurp src)
+         (lexer/scan)
+         (:tokens)
+         (parser/parse)
+         (:ast)
+         (nasm/translate)
+         (spit dest))
+    dest))
+
+(defn asm->obj [cfg src]
+  (println "Compiling assembly files to object files...")
+  (let [dest (->> src (#(string/replace % ".asm" ".o")))]
+    (->> src
+         (#(format "%1$s %2$s -o %3$s" (:cc cfg) % dest))
+         (process/shell))
+    dest))
+
+(defn objs->exe [cfg srcs]
+  (println "Linking object files...")
+  (let [libs (->> ["io" "str" "sys" "rand"]
+                  (map #(->> % (format "stdlib/lib/%1$s.o") io/resource .getPath))
+                  (string/join " "))
+        dest (:target cfg)]
+    (->> srcs
+         (string/join " ")
+         (#(format "ld %1$s %2$s -o %3$s" % libs dest))
+         (process/shell))
+    dest))
+
 (defn -main [& args]
-  (->> (first args)
-       (slurp)
-       (lexer/scan)
-       (:tokens)
-       (parser/parse)
-       (:ast)
-       (nasm/translate)
-       (println)))
+  (try
+    (let [cfg (parse-cfg (first args))]
+      (fs/delete-tree (:dest cfg))
+      (fs/create-dirs (:dest cfg))
+      (->> (fs/match (:src cfg) "regex:.*\\.th" {:recursive true})
+           (map str)
+           (map #(src->asm cfg %))
+           (map #(asm->obj cfg %))
+           (#(objs->exe cfg %))))
+    (catch Exception error
+      (println "[ERROR]:" (.getMessage error)))))
 

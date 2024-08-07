@@ -21,86 +21,6 @@
 
 (def ^:private make nil)
 
-(def NASM-DATA
-  (str "section .data\n"
-       "\tfalse equ 0\n"
-       "\ttrue equ 1\n"
-       "\tnull equ 0\n"
-       "\t_SYS_EXIT_ equ 0x3c\n"
-       "\t_SYS_WRITE_ equ 0x1\n"
-       "\t_SYS_STDOUT_ equ 1\n"))
-
-(def NASM-BSS
-  (str "\nsection .bss\n"
-       "\t_CHR_BSS_ resb 1\n"))
-
-(def NASM-END
-  (str "int_print:\n"
-       "\tpush rax\n"
-       "\tpush rbx\n"
-       "\tpush rcx\n"
-       "\tpush rdx\n"
-       "\txor rcx, rcx\n"
-       "\tcmp rax, 0\n"
-       "\tjge .decomp\n"
-       ".negate:\n"
-       "\tmov rdx, rax\n"
-       "\tmov rax, '-'\n"
-       "\tcall chr_print\n"
-       "\tmov rax, rdx\n"
-       "\tneg rax\n"
-       ".decomp:\n"
-       "\tmov rbx, 10\n"
-       "\txor rdx, rdx\n"
-       "\tdiv rbx\n"
-       "\tadd rdx, '0'\n"
-       "\tpush rdx\n"
-       "\tinc rcx\n"
-       "\tcmp rax, 0\n"
-       "\tje .print\n"
-       "\tjmp .decomp\n"
-       ".print:\n"
-       "\tcmp rcx, 0\n"
-       "\tje .close\n"
-       "\tdec rcx\n"
-       "\tpop rax\n"
-       "\tcall chr_print\n"
-       "\tjmp .print\n"
-       ".close:\n"
-       "\tpop rdx\n"
-       "\tpop rcx\n"
-       "\tpop rbx\n"
-       "\tpop rax\n"
-       "\tret\n\n"
-       "eol_print:\n"
-       "\tpush rax\n"
-       "\tmov rax, 0xA\n"
-       "\tcall chr_print\n"
-       "\tpop rax\n"
-       "\tret\n\n"
-       "chr_print:\n"
-       "\tpush rax\n"
-       "\tpush rdi\n"
-       "\tpush rsi\n"
-       "\tpush rdx\n"
-       "\tpush rcx\n"
-       "\tmov [_CHR_BSS_], al\n"
-       "\tmov rax, _SYS_WRITE_\n"
-       "\tmov rdi, _SYS_STDOUT_\n"
-       "\tmov rsi, _CHR_BSS_\n"
-       "\tmov rdx, 1\n"
-       "\tsyscall\n"
-       "\tpop rcx\n"
-       "\tpop rdx\n"
-       "\tpop rsi\n"
-       "\tpop rdi\n"
-       "\tpop rax\n"
-       "\tret\n\n"
-       "sys_exit:\n"
-       "\tmov rax, _SYS_EXIT_\n"
-       "\txor rdi, rdi\n"
-       "\tsyscall\n"))
-
 (defn ^:private next! [label]
   (swap! label inc))
 
@@ -252,9 +172,10 @@
          (map #(make % label))
          (string/join "")
          (#(str "global _start\n\n"
-                NASM-DATA
-                %
-                NASM-BSS
-                (make program label)
-                NASM-END)))))
+                "extern sys_exit\n"
+                "extern chr_print\n"
+                "extern eol_print\n"
+                "extern int_print\n"
+                "\nsection .data\n" %
+                (make program label))))))
 

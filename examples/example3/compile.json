@@ -1,0 +1,6 @@
+{
+  "src": "src/",
+  "dest": "bin/",
+  "target": "app"
+}
+
