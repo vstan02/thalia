@@ -21,6 +21,7 @@
 - Java
 - Clojure
 - Leiningen
+- YASM
 
 These packages can usually be installed through your distributions package manager.
 

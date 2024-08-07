@@ -40,7 +40,7 @@
       (throw (Exception. "Fields 'src', 'dest' and 'target' are required.")))
     (let [dest (->> cfg :dest (path-resolve parent))]
       (merge
-       {:cc "nasm -felf64"
+       {:cc "yasm -felf64"
         :stdlib (or (System/getenv "STDLIB_DIR")
                     "/usr/share/thalia/stdlib")}
        {:src (->> cfg :src (path-resolve parent))
