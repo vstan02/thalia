@@ -1,4 +1,4 @@
-(defproject thalia ""
+(defproject thalia "0.0.0"
   :description "A fast, statically typed, general-purpose, procedural programming language"
   :url "https://github.com/vstan02/thalia"
   :license {:name "GPL-3.0"}

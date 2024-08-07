@@ -5,27 +5,70 @@
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](http://www.gnu.org/licenses/lgpl-3.0)
 
 ## Contents
-- [Building and Installation](#building-and-installation)
-  - [Building the project](#building-the-project)
-  - [Running tests](#running-tests)
+- [Building the project](#building-the-project)
+  - [Prerequirements](#prerequirements)
   - [Running the program](#running-the-program)
+  - [Running the tests](#running-the-tests)
   - [Installation](#installation)
+- [Usage](#usage)
+- [Options](#options)
+- [Examples](#examples)
 - [License](#license)
 - [Contributing](#contributing)
 
-## Installation
-Download from http://example.com/FIXME.
+## Building the project
+### Prerequirements
+- Java
+- Clojure
+- Leiningen
+
+These packages can usually be installed through your distributions package manager.
+
+### Project setup
+To setup the project for development, we simply have to run the `setup.sh` script:
+
+```sh 
+./setup.sh
+```
+
+### Running the program
+If everything went well with the compilation we can run our compiler with `lein run`:
+
+```
+STDLIB_DIR='./stdlib/lib/' lein run './examples/example1/compile.json'
+```
+
+### Running the tests
+We can run the tests with the `lein run` command:
+
+```
+lein test
+```
+
+### Installation
+To install the Thalia compiler just run the `install.sh` script:
+```sh 
+./install.sh
+```
 
 ## Usage
-  $ java -jar thalia.jar [args]
+```sh
+$ thalia config.json
+```
+
+The config file should look like this:
+```json 
+{
+  "src": "src/",
+  "dest": "bin/",
+  "target": "app"
+}
+```
 
 ## Options
 FIXME: listing of options this app accepts.
 
 ## Examples
-...
-
-### Bugs
 ...
 
 ## License

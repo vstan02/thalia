@@ -20,7 +20,6 @@
   (:require [babashka.fs :as fs]
             [babashka.process :as process]
             [cheshire.core :as json]
-            [clojure.java.io :as io]
             [clojure.string :as string]
             [thalia.nasm :as nasm]
             [thalia.lexer :as lexer]
@@ -41,13 +40,14 @@
       (throw (Exception. "Fields 'src', 'dest' and 'target' are required.")))
     (let [dest (->> cfg :dest (path-resolve parent))]
       (merge
-       {:cc "nasm -felf64"}
+       {:cc "nasm -felf64"
+        :stdlib (or (System/getenv "STDLIB_DIR")
+                    "/usr/share/thalia/stdlib")}
        {:src (->> cfg :src (path-resolve parent))
         :dest dest
         :target (->> cfg :target (path-resolve dest))}))))
 
 (defn src->asm [cfg src]
-  (println "Compiling thalia files to assembly...")
   (let [dest (->> src
                   (#(string/replace % (:src cfg) (:dest cfg)))
                   (#(string/replace % ".th" ".asm")))]
@@ -61,7 +61,6 @@
     dest))
 
 (defn asm->obj [cfg src]
-  (println "Compiling assembly files to object files...")
   (let [dest (->> src (#(string/replace % ".asm" ".o")))]
     (->> src
          (#(format "%1$s %2$s -o %3$s" (:cc cfg) % dest))
@@ -69,9 +68,8 @@
     dest))
 
 (defn objs->exe [cfg srcs]
-  (println "Linking object files...")
-  (let [libs (->> ["io" "str" "sys" "rand"]
-                  (map #(->> % (format "stdlib/lib/%1$s.o") io/resource .getPath))
+  (let [libs (->> (fs/match (:stdlib cfg) "regex:.*\\.o" {:recursive true})
+                  (map str)
                   (string/join " "))
         dest (:target cfg)]
     (->> srcs
