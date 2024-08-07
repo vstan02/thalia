@@ -52,11 +52,11 @@ To install the Thalia compiler just run the `install.sh` script:
 ```
 
 ## Usage
+To compile a Thalia project you can just run:
 ```sh
-$ thalia config.json
+thalia config.json
 ```
-
-The config file should look like this:
+where the `config.json` config file contains something like this:
 ```json 
 {
   "src": "src/",
