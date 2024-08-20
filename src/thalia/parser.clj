@@ -30,16 +30,16 @@
 
 (defn ^:private gen-parse-repeated [delims parse-item]
   (fn [tokens]
-    (let [$res1 (parse-item tokens)]
-      (loop [$nodes [(:ast $res1)]
-             $errors (:errors $res1)
-             $tokens (:rest $res1)]
-        (if-not (token/check (first $tokens) delims)
-          {:ast $nodes :errors $errors :rest $tokens}
-          (let [$res2 (->> $tokens rest parse-item)]
-            (recur (conj $nodes (:ast $res2))
-                   (concat $errors (:errors $res2))
-                   (:rest $res2))))))))
+    (let [res1 (parse-item tokens)]
+      (loop [nodes1 [(:ast res1)]
+             errors1 (:errors res1)
+             tokens1 (:rest res1)]
+        (if-not (token/check (first tokens1) delims)
+          {:ast nodes1 :errors errors1 :rest tokens1}
+          (let [res2 (->> tokens1 rest parse-item)]
+            (recur (conj nodes1 (:ast res2))
+                   (concat errors1 (:errors res2))
+                   (:rest res2))))))))
 
 (defn ^:private parse-pattern [nname tokens rules]
   (loop [node {:type nname}
@@ -279,7 +279,7 @@
    [{:values #{:PROGRAM} :error :EXPECT-PROGRAM}
     {:function parse-stmt-block :field :body}]))
 
-(defn parse-decl [tokens]
+(defn ^:private parse-decl [tokens]
   (case (->> tokens first :type)
     :VAR (parse-decl-variable tokens)
     :PROGRAM (parse-decl-program tokens)

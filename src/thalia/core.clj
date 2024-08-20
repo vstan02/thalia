@@ -25,10 +25,10 @@
             [thalia.lexer :as lexer]
             [thalia.parser :as parser]))
 
-(defn path-resolve [parent file]
+(defn ^:private path-resolve [parent file]
   (->> file (fs/path parent) fs/canonicalize str))
 
-(defn parse-cfg [path]
+(defn ^:private parse-cfg [path]
   (when-not path
     (throw (Exception. "Invalid config path.")))
   (let [parent (fs/parent path)
@@ -47,7 +47,7 @@
         :dest dest
         :target (->> cfg :target (path-resolve dest))}))))
 
-(defn src->asm [cfg src]
+(defn ^:private src->asm [cfg src]
   (let [dest (->> src
                   (#(string/replace % (:src cfg) (:dest cfg)))
                   (#(string/replace % ".th" ".asm")))]
@@ -60,14 +60,14 @@
          (spit dest))
     dest))
 
-(defn asm->obj [cfg src]
+(defn ^:private asm->obj [cfg src]
   (let [dest (->> src (#(string/replace % ".asm" ".o")))]
     (->> src
          (#(format "%1$s %2$s -o %3$s" (:cc cfg) % dest))
          (process/shell))
     dest))
 
-(defn objs->exe [cfg srcs]
+(defn ^:private objs->exe [cfg srcs]
   (let [libs (->> (fs/match (:stdlib cfg) "regex:.*\\.o" {:recursive true})
                   (map str)
                   (string/join " "))
