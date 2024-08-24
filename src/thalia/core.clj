@@ -21,7 +21,7 @@
             [thalia.io :as io]
             [thalia.fs :as fs]
             [thalia.json :as json]
-            [thalia.config :as config]
+            [thalia.cfg :as cfg]
             [thalia.lexer :as lexer]))
 
 (defn ^:private src->asm [cfg src]
@@ -36,7 +36,7 @@
 
 (defn -main [& args]
   (try
-    (let [cfg (config/parse (first args))]
+    (let [cfg (cfg/parse (first args))]
       (fs/clear-tree (:dest cfg))
       (->> (fs/get-all (:src cfg) ".*\\.th")
            (map #(src->asm cfg %))

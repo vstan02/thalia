@@ -15,7 +15,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-(ns thalia.config
+(ns thalia.cfg
   (:gen-class)
   (:require [thalia.fs :as fs]
             [thalia.json :as json]))
