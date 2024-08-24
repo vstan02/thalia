@@ -53,10 +53,11 @@
                   (#(string/replace % ".th" ".asm")))]
     (->> (slurp src)
          (lexer/scan)
-         (:tokens)
-         (parser/parse)
-         (:ast)
-         (nasm/translate)
+         #_(:tokens)
+         #_(parser/parse)
+         #_(:ast)
+         #_(nasm/translate)
+         (#(json/generate-string % {:pretty true}))
          (spit dest))
     dest))
 
@@ -81,13 +82,16 @@
 (defn -main [& args]
   (try
     (let [cfg (parse-cfg (first args))]
+      (println cfg)
       (fs/delete-tree (:dest cfg))
       (fs/create-dirs (:dest cfg))
       (->> (fs/match (:src cfg) "regex:.*\\.th" {:recursive true})
            (map str)
+           #_(println)
            (map #(src->asm cfg %))
-           (map #(asm->obj cfg %))
-           (#(objs->exe cfg %))))
+           (println)
+           #_(map #(asm->obj cfg %))
+           #_(#(objs->exe cfg %))))
     (catch Exception error
       (println "[ERROR]:" (.getMessage error)))))
 

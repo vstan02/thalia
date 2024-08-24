@@ -1,0 +1,4 @@
+global main(): i64 {
+  return 4i + 5i;
+}
+

@@ -34,7 +34,7 @@
    "+" :PLUS
    "-" :MINUS
    "*" :STAR
-   "\\" :SLASH
+   "/" :SLASH
    "%" :PERCENT
    "!" :BANG
    "=" :EQUAL
@@ -48,18 +48,17 @@
    "||" :PIPE-PIPE})
 
 (def ^:private kws-tokens
-  {"def" :VAR
-   "print" :PRINT
-   "println" :PRINTLN
-   "program" :PROGRAM
+  {"let" :LET
+   "const" :CONST
    "if" :IF
    "else" :ELSE
    "while" :WHILE
    "each" :EACH
    "in" :IN
+   "use" :USE
    "return" :RETURN
-   "static" :STATIC
-   "extern" :EXTERN})
+   "global" :GLOBAL
+   "local" :LOCAL})
 
 (defn ^:private whitespace? [c]
   (contains? #{\tab \space \return \newline} c))
@@ -78,7 +77,12 @@
        (string/join "")))
 
 (defn ^:private scan-number-token [code pos line]
-  (token/make :INT (cond-subs digit? code) pos line))
+  (let [value (cond-subs digit? code)
+        size (count value)
+        next-ch (nth code size)]
+    (if (#{\b \s \i \l} next-ch)
+      (token/make :INT (str next-ch value) pos line)
+      (token/make nil value pos line))))
 
 (defn ^:private scan-id|kw-token [code pos line]
   (let [value (cond-subs alphanum? code)
