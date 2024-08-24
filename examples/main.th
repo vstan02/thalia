@@ -1,13 +1,25 @@
-extern std::writeln(i32): i32;
+use printi(v: i64): i64;
 
-const max = (x: i32, y: i32): i32 => {
+global main(): i64 {
   return 0;
-};
+}
 
-const main = (): i32 => {
-  std::writeln(21);
-  return 0;
-};
+/*
+
+global main
+
+extern printi
+
+main:
+  push rbp
+  mov rbp, rsp
+  mov rax, 0
+  pop rbp
+  ret
+
+*/
+
+
 
 /*
 

@@ -1,0 +1,67 @@
+root = decl*;
+
+decl = decl_fun;
+decl_use = USE ID LPAREN (ID COLON ID (COMMA ID COLON ID)*)? RPAREN SEMI;
+decl_fun = (GLOBAL | LOCAL) ID LPAREN (ID COLON ID (COMMA ID COLON ID)*)? RPAREN stmt_block;
+
+stmt_if = IF expr stmt_block (ELSE (stmt_if | stmt_block))?;
+stmt_block = LBRACE stmt* RBRACE;
+stmt_while = WHILE expr stmt_block;
+stmt_each = EACH (LET | CONST) ID COLON ID IN expr_range stmt_block;
+stmt_local = (LET | CONST) ID COLON ID (EQUAL expr)? (COMMA ID COLON ID (EQUAL expr)?)* SEMI;
+stmt_return = RETURN expr? SEMI;
+stmt_expr = expr SEMI;
+stmt = stmt_local | stmt_block | stmt_if | stmt_while | stmt_each | stmt_return | stmt_expr;
+
+expr = expr_assign;
+expr_assign = expr_logic_or (EQUAL expr)?;
+expr_logic_or = expr_logic_and (PIPE_PIPE expr_logic_and)*;
+expr_logic_and = expr_equal (AMPER_AMPER expr_equal)*;
+expr_equal = expr_comp ((EQUAL_EQUAL | BANG_EQUAL) expr_comp)?;
+expr_comp = expr_term ((GREATER | GREATER_EQUAL | LESS | LESS_EQUAL) expr_term)?;
+expr_term = expr_factor ((PLUS | MINUS) expr_factor)*;
+expr_factor = expr_unary ((STAR | SLASH | PERCENT) expr_unary)*;
+expr_unary = (MINUS | BANG) expr_unary | expr_primary;
+expr_primary = LPAREN expr RPAREN | ID | expr_literal;
+expr_literal = INT;
+expr_range = LBRACKET INT (COLON INT)? (COLON INT)? RBRACKET;
+
+INT = /[0-9]+[bsil]/;
+ID = /[_a-zA-Z][_a-zA-Z0-9]*/;
+LET = "let";
+CONST = "const";
+IF = "if";
+ELSE = "else";
+WHILE = "while";
+EACH = "each";
+IN = "in";
+USE = "use";
+RETURN = "return";
+GLOBAL = "global";
+LOCAL = "local";
+LPAREN = "(";
+RPAREN = ")";
+LBRACE = "{";
+RBRACE = "}";
+LBRACKET = "[";
+RBRACKET = "]";
+COMMA = ",";
+SEMI = ";";
+COLON = ":";
+DOT = ".";
+PLUS = "+";
+MINUS = "-";
+STAR = "*";
+SLASH = "/";
+PERCENT = "&";
+BANG = "!";
+EQUAL = "=";
+EQUAL_EQUAL = "==";
+BANG_EQUAL = "!=";
+GREATER = "<";
+GREATER_EQUAL = ">=";
+LESS = "<";
+LESS_EQUAL = "<=";
+AMPER_AMPER = "&&";
+PIPE_PIPE = "||";
+
