@@ -127,5 +127,9 @@
 (defn scan [code]
   (let [tokens (scan-all code)
         errors (->> tokens (filter #(nil? (:type %))))]
-    {:errors errors :tokens tokens}))
+    (if (empty? errors)
+      tokens
+      (throw (ex-info "Invalid tokens."
+                      {:type :LEXER-ERROR
+                       :tokens errors})))))
 

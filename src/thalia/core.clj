@@ -17,81 +17,33 @@
 
 (ns thalia.core
   (:gen-class)
-  (:require [babashka.fs :as fs]
-            [babashka.process :as process]
-            [cheshire.core :as json]
-            [clojure.string :as string]
-            [thalia.nasm :as nasm]
-            [thalia.lexer :as lexer]
-            [thalia.parser :as parser]))
-
-(defn ^:private path-resolve [parent file]
-  (->> file (fs/path parent) fs/canonicalize str))
-
-(defn ^:private parse-cfg [path]
-  (when-not path
-    (throw (Exception. "Invalid config path.")))
-  (let [parent (fs/parent path)
-        cfg (json/parse-string (slurp path) true)]
-    (when-not (->> [:src :dest :target]
-                   (map #(% cfg))
-                   (filter nil?)
-                   (empty?))
-      (throw (Exception. "Fields 'src', 'dest' and 'target' are required.")))
-    (let [dest (->> cfg :dest (path-resolve parent))]
-      (merge
-       {:cc "yasm -felf64"
-        :stdlib (or (System/getenv "STDLIB_DIR")
-                    "/usr/share/thalia/stdlib")}
-       {:src (->> cfg :src (path-resolve parent))
-        :dest dest
-        :target (->> cfg :target (path-resolve dest))}))))
+  (:require [clojure.string :as string]
+            [thalia.io :as io]
+            [thalia.fs :as fs]
+            [thalia.json :as json]
+            [thalia.config :as config]
+            [thalia.lexer :as lexer]))
 
 (defn ^:private src->asm [cfg src]
   (let [dest (->> src
                   (#(string/replace % (:src cfg) (:dest cfg)))
-                  (#(string/replace % ".th" ".asm")))]
+                  (#(string/replace % ".th" ".json")))]
     (->> (slurp src)
          (lexer/scan)
-         #_(:tokens)
-         #_(parser/parse)
-         #_(:ast)
-         #_(nasm/translate)
-         (#(json/generate-string % {:pretty true}))
+         (json/build)
          (spit dest))
-    dest))
-
-(defn ^:private asm->obj [cfg src]
-  (let [dest (->> src (#(string/replace % ".asm" ".o")))]
-    (->> src
-         (#(format "%1$s %2$s -o %3$s" (:cc cfg) % dest))
-         (process/shell))
-    dest))
-
-(defn ^:private objs->exe [cfg srcs]
-  (let [libs (->> (fs/match (:stdlib cfg) "regex:.*\\.o" {:recursive true})
-                  (map str)
-                  (string/join " "))
-        dest (:target cfg)]
-    (->> srcs
-         (string/join " ")
-         (#(format "ld %1$s %2$s -o %3$s" % libs dest))
-         (process/shell))
     dest))
 
 (defn -main [& args]
   (try
-    (let [cfg (parse-cfg (first args))]
-      (println cfg)
-      (fs/delete-tree (:dest cfg))
-      (fs/create-dirs (:dest cfg))
-      (->> (fs/match (:src cfg) "regex:.*\\.th" {:recursive true})
-           (map str)
-           #_(println)
+    (let [cfg (config/parse (first args))]
+      (fs/clear-tree (:dest cfg))
+      (->> (fs/get-all (:src cfg) ".*\\.th")
            (map #(src->asm cfg %))
-           (println)
-           #_(map #(asm->obj cfg %))
-           #_(#(objs->exe cfg %))))
+           (string/join "\n")
+           (io/writeln)))
     (catch Exception error
-      (println "[ERROR]:" (.getMessage error)))))
+      (let [data (ex-data error)]
+        (io/writeln "[ERROR]: " (ex-message error)
+                    (when data (str "\n==> " (ex-data error))))))))
 
