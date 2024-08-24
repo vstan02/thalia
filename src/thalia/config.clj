@@ -29,12 +29,12 @@
                   (filter #(nil? (% cfg))))]
     (when-not (empty? nils)
       (throw (ex-info "Required fields not found." {:type :CONFIG-ERROR :fields nils})))
-    (let [dest (->> cfg :dest (fs/by root))]
+    (let [dest (->> cfg :dest (fs/path root))]
       (merge
        {:cc "yasm -felf64"
         :stdlib (or (System/getenv "STDLIB_DIR")
                     "/usr/share/thalia/stdlib")}
-       {:src (->> cfg :src (fs/by root))
+       {:src (->> cfg :src (fs/path root))
         :dest dest
-        :target (->> cfg :target (fs/by dest))}))))
+        :target (->> cfg :target (fs/path dest))}))))
 

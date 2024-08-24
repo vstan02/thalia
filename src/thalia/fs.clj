@@ -27,7 +27,7 @@
   (fs/delete-tree path)
   (fs/create-dirs path))
 
-(defn by [root file]
+(defn path [root file]
   (->> file (fs/path root) fs/canonicalize str))
 
 (defn parent [file]
