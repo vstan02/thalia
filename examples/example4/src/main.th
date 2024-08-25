@@ -1,4 +1,7 @@
 global main(): int {
-  return -4i * 3i - 9i;
+  const x: int = 3i,
+        y: int = 6i,
+        s: int = x + y;
+  return s;
 }
 

@@ -42,6 +42,34 @@
            :rest (:rest value2)}))
       {:ast {:to (:ast value1)} :errors (:errors value1) :rest tokens1})))
 
+(defn ^:private parse-decl [tokens]
+  (let [parse-base (pattern/flat
+                    :STMT-VAR
+                    [{:values #{:ID} :error :EXPECT-ID :field :name}
+                     {:values #{:COLON} :error :EXPECT-COLON}
+                     {:values #{:ID} :error :EXPECT-ID :field :data-type}])
+        value1 (parse-base tokens)]
+    (if-not (token/check (->> value1 :rest first) #{:EQUAL})
+      value1
+      (let [value2 (->> value1 :rest rest expr/parse)]
+        {:ast (merge (:ast value1) {:value (:ast value2)})
+         :errors (concat (:errors value1) (:errors value2))
+         :rest (:rest value2)}))))
+
+(defn ^:private parse-decls [tokens]
+  (if (token/check (first tokens) #{:EOF :SEMI})
+    {:ast [] :errors [] :rest tokens}
+    (let [res1 (parse-decl tokens)]
+      (loop [nodes1 [(:ast res1)]
+             errors1 (:errors res1)
+             tokens1 (:rest res1)]
+        (if-not (token/check (first tokens1) #{:COMMA})
+          {:ast nodes1 :errors errors1 :rest tokens1}
+          (let [res2 (->> tokens1 rest parse-decl)]
+            (recur (conj nodes1 (:ast res2))
+                   (concat errors1 (:errors res2))
+                   (:rest res2))))))))
+
 (defn parse-block [tokens]
   (if-not (token/check (first tokens) #{:LBRACE})
     {:ast {:type :STMT-BLOCK}
@@ -66,12 +94,12 @@
                  (:rest res)))))))
 
 (defn parse-if [tokens]
-  (let [parse-base-if (pattern/flat
-                       :STMT-IF
-                       [{:values #{:IF} :error :EXPECT-IF}
-                        {:function expr/parse :field :condition}
-                        {:function parse-block :field :body}])
-        value1 (parse-base-if tokens)
+  (let [parse-base (pattern/flat
+                    :STMT-IF
+                    [{:values #{:IF} :error :EXPECT-IF}
+                     {:function expr/parse :field :condition}
+                     {:function parse-block :field :body}])
+        value1 (parse-base tokens)
         tokens1 (:rest value1)]
     (if-not (token/check (first tokens1) #{:ELSE})
       value1
@@ -101,6 +129,13 @@
     {:values #{:RBRACKET} :error :EXPECT-RBRACKET}
     {:function parse-block :field :body}]))
 
+(def parse-local
+  (pattern/flat
+   :STMT-LOCAL
+   [{:values #{:LET :CONST} :error :EXPECT-VAR-CLASS :field :class}
+    {:function parse-decls :field :vars}
+    {:values #{:SEMI} :error :EXPECT-SEMI}]))
+
 (def parse-return
   (pattern/flat
    :STMT-RETURN
@@ -121,5 +156,7 @@
     :IF (parse-if tokens)
     :WHILE (parse-while tokens)
     :EACH (parse-each tokens)
+    :LET (parse-local tokens)
+    :CONST (parse-local tokens)
     (parse-expr tokens)))
 

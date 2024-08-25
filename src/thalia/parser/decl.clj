@@ -60,7 +60,7 @@
 (def parse-fun
   (pattern/flat
    :DECL-FUN
-   [{:values #{:GLOBAL :LOCAL} :error :EXPECT-CLASS :field :class}
+   [{:values #{:GLOBAL :LOCAL} :error :EXPECT-FUN-CLASS :field :class}
     {:values #{:ID} :error :EXPECT-ID :field :name}
     {:values #{:LPAREN} :error :EXPECT-LPAREN}
     {:function parse-params :field :params}
