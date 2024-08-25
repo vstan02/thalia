@@ -1,7 +1,15 @@
 global main(): int {
-  const x: int = 3i,
-        y: int = 6i,
-        s: int = x + y;
-  return s;
+  const x: int = 2i,
+        p: int = 6i;
+
+  let i: int = 0i,
+      r: int = 1i;
+
+  while i < p {
+    r = r * x;
+    i = i + 1i;
+  }
+
+  return r;
 }
 
