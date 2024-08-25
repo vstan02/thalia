@@ -23,7 +23,7 @@
 (defn ^:private at-end? [tokens]
   (or (token/check (first tokens) #{:EOF}) (empty? tokens)))
 
-(defn parse [tokens]
+(defn ^:private parse-file [tokens]
   (loop [nodes []
          errors []
          tokens0 tokens]
@@ -33,4 +33,11 @@
         (recur (conj nodes (:ast res))
                (concat errors (:errors res))
                (:rest res))))))
+
+(defn parse [tokens]
+  (let [file (parse-file tokens)]
+    (if (->> file :errors empty?)
+      (:ast file)
+      (throw (ex-info "Invalid syntax."
+                      (merge {:type :PARSER-ERROR} file))))))
 
