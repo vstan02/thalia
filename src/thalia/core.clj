@@ -22,7 +22,8 @@
             [thalia.fs :as fs]
             [thalia.json :as json]
             [thalia.cfg :as cfg]
-            [thalia.lexer :as lexer]))
+            [thalia.lexer :as lexer]
+            [thalia.parser.core :as parser]))
 
 (defn ^:private src->asm [cfg src]
   (let [dest (->> src
@@ -30,6 +31,7 @@
                   (#(string/replace % ".th" ".json")))]
     (->> (slurp src)
          (lexer/scan)
+         (parser/parse)
          (json/build)
          (spit dest))
     dest))

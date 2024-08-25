@@ -1,71 +1,91 @@
-[ {
-  "type" : "GLOBAL",
-  "value" : "global",
-  "pos" : 0,
-  "line" : 1
-}, {
-  "type" : "ID",
-  "value" : "main",
-  "pos" : 7,
-  "line" : 1
-}, {
-  "type" : "LPAREN",
-  "value" : "(",
-  "pos" : 11,
-  "line" : 1
-}, {
-  "type" : "RPAREN",
-  "value" : ")",
-  "pos" : 12,
-  "line" : 1
-}, {
-  "type" : "COLON",
-  "value" : ":",
-  "pos" : 13,
-  "line" : 1
-}, {
-  "type" : "ID",
-  "value" : "i64",
-  "pos" : 15,
-  "line" : 1
-}, {
-  "type" : "LBRACE",
-  "value" : "{",
-  "pos" : 19,
-  "line" : 1
-}, {
-  "type" : "RETURN",
-  "value" : "return",
-  "pos" : 23,
-  "line" : 2
-}, {
-  "type" : "INT",
-  "value" : "i4",
-  "pos" : 30,
-  "line" : 2
-}, {
-  "type" : "PLUS",
-  "value" : "+",
-  "pos" : 33,
-  "line" : 2
-}, {
-  "type" : "INT",
-  "value" : "i5",
-  "pos" : 35,
-  "line" : 2
-}, {
-  "type" : "SEMI",
-  "value" : ";",
-  "pos" : 37,
-  "line" : 2
-}, {
-  "type" : "RBRACE",
-  "value" : "}",
-  "pos" : 39,
-  "line" : 3
-}, {
-  "type" : "EOF",
-  "value" : "",
-  "pos" : 42,
-  "line" : 5
-} ]
+{
+  "ast" : [ {
+    "body" : {
+      "type" : "STMT-BLOCK",
+      "stmts" : [ {
+        "value" : {
+          "left" : {
+            "left" : {
+              "value" : {
+                "token" : {
+                  "type" : "INT",
+                  "value" : "i4",
+                  "pos" : 31,
+                  "line" : 2
+                },
+                "type" : "EXPR-LITERAL"
+              },
+              "operator" : {
+                "type" : "MINUS",
+                "value" : "-",
+                "pos" : 30,
+                "line" : 2
+              },
+              "type" : "EXPR-UNARY"
+            },
+            "right" : {
+              "token" : {
+                "type" : "INT",
+                "value" : "i3",
+                "pos" : 36,
+                "line" : 2
+              },
+              "type" : "EXPR-LITERAL"
+            },
+            "operator" : {
+              "type" : "STAR",
+              "value" : "*",
+              "pos" : 34,
+              "line" : 2
+            },
+            "type" : "EXPR-BINARY"
+          },
+          "right" : {
+            "token" : {
+              "type" : "INT",
+              "value" : "i9",
+              "pos" : 41,
+              "line" : 2
+            },
+            "type" : "EXPR-LITERAL"
+          },
+          "operator" : {
+            "type" : "MINUS",
+            "value" : "-",
+            "pos" : 39,
+            "line" : 2
+          },
+          "type" : "EXPR-BINARY"
+        },
+        "type" : "STMT-RETURN"
+      } ]
+    },
+    "data-type" : {
+      "type" : "ID",
+      "value" : "int",
+      "pos" : 15,
+      "line" : 1
+    },
+    "params" : [ ],
+    "name" : {
+      "type" : "ID",
+      "value" : "main",
+      "pos" : 7,
+      "line" : 1
+    },
+    "class" : {
+      "type" : "GLOBAL",
+      "value" : "global",
+      "pos" : 0,
+      "line" : 1
+    },
+    "type" : "DECL-FUN"
+  } ],
+  "errors" : [ ],
+  "rest" : [ {
+    "type" : "EOF",
+    "value" : "",
+    "pos" : 48,
+    "line" : 5
+  } ]
+}
