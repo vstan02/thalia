@@ -1,262 +1,266 @@
-[ {
-  "body" : {
-    "type" : "STMT-BLOCK",
-    "stmts" : [ {
-      "vars" : [ {
-        "data-type" : {
-          "type" : "ID",
-          "value" : "int",
-          "pos" : 32,
-          "line" : 2
-        },
-        "name" : {
-          "type" : "ID",
-          "value" : "x",
-          "pos" : 29,
-          "line" : 2
-        },
-        "type" : "STMT-VAR",
-        "value" : {
-          "token" : {
-            "type" : "INT",
-            "value" : "i2",
-            "pos" : 38,
+{
+  "type" : "FILE",
+  "uses" : [ ],
+  "funcs" : [ {
+    "body" : {
+      "type" : "STMT-BLOCK",
+      "stmts" : [ {
+        "vars" : [ {
+          "data-type" : {
+            "type" : "ID",
+            "value" : "int",
+            "pos" : 32,
             "line" : 2
           },
-          "type" : "EXPR-LITERAL"
-        }
-      }, {
-        "data-type" : {
-          "type" : "ID",
-          "value" : "int",
-          "pos" : 53,
-          "line" : 3
-        },
-        "name" : {
-          "type" : "ID",
-          "value" : "p",
-          "pos" : 50,
-          "line" : 3
-        },
-        "type" : "STMT-VAR",
-        "value" : {
-          "token" : {
-            "type" : "INT",
-            "value" : "i6",
-            "pos" : 59,
+          "name" : {
+            "type" : "ID",
+            "value" : "x",
+            "pos" : 29,
+            "line" : 2
+          },
+          "type" : "STMT-VAR",
+          "value" : {
+            "token" : {
+              "type" : "INT",
+              "value" : "i2",
+              "pos" : 38,
+              "line" : 2
+            },
+            "type" : "EXPR-LITERAL"
+          }
+        }, {
+          "data-type" : {
+            "type" : "ID",
+            "value" : "int",
+            "pos" : 53,
             "line" : 3
           },
-          "type" : "EXPR-LITERAL"
-        }
-      } ],
-      "class" : {
-        "type" : "CONST",
-        "value" : "const",
-        "pos" : 23,
-        "line" : 2
-      },
-      "type" : "STMT-LOCAL"
-    }, {
-      "vars" : [ {
-        "data-type" : {
-          "type" : "ID",
-          "value" : "int",
-          "pos" : 73,
-          "line" : 5
+          "name" : {
+            "type" : "ID",
+            "value" : "p",
+            "pos" : 50,
+            "line" : 3
+          },
+          "type" : "STMT-VAR",
+          "value" : {
+            "token" : {
+              "type" : "INT",
+              "value" : "i6",
+              "pos" : 59,
+              "line" : 3
+            },
+            "type" : "EXPR-LITERAL"
+          }
+        } ],
+        "class" : {
+          "type" : "CONST",
+          "value" : "const",
+          "pos" : 23,
+          "line" : 2
         },
-        "name" : {
-          "type" : "ID",
-          "value" : "i",
-          "pos" : 70,
-          "line" : 5
-        },
-        "type" : "STMT-VAR",
-        "value" : {
-          "token" : {
-            "type" : "INT",
-            "value" : "i0",
-            "pos" : 79,
+        "type" : "STMT-LOCAL"
+      }, {
+        "vars" : [ {
+          "data-type" : {
+            "type" : "ID",
+            "value" : "int",
+            "pos" : 73,
             "line" : 5
           },
-          "type" : "EXPR-LITERAL"
-        }
-      }, {
-        "data-type" : {
-          "type" : "ID",
-          "value" : "int",
-          "pos" : 92,
-          "line" : 6
-        },
-        "name" : {
-          "type" : "ID",
-          "value" : "r",
-          "pos" : 89,
-          "line" : 6
-        },
-        "type" : "STMT-VAR",
-        "value" : {
-          "token" : {
-            "type" : "INT",
-            "value" : "i1",
-            "pos" : 98,
+          "name" : {
+            "type" : "ID",
+            "value" : "i",
+            "pos" : 70,
+            "line" : 5
+          },
+          "type" : "STMT-VAR",
+          "value" : {
+            "token" : {
+              "type" : "INT",
+              "value" : "i0",
+              "pos" : 79,
+              "line" : 5
+            },
+            "type" : "EXPR-LITERAL"
+          }
+        }, {
+          "data-type" : {
+            "type" : "ID",
+            "value" : "int",
+            "pos" : 92,
             "line" : 6
           },
-          "type" : "EXPR-LITERAL"
-        }
-      } ],
-      "class" : {
-        "type" : "LET",
-        "value" : "let",
-        "pos" : 66,
-        "line" : 5
-      },
-      "type" : "STMT-LOCAL"
-    }, {
-      "body" : {
-        "type" : "STMT-BLOCK",
-        "stmts" : [ {
+          "name" : {
+            "type" : "ID",
+            "value" : "r",
+            "pos" : 89,
+            "line" : 6
+          },
+          "type" : "STMT-VAR",
           "value" : {
-            "type" : "EXPR-ASSIGN",
-            "target" : {
-              "token" : {
-                "type" : "ID",
-                "value" : "r",
-                "pos" : 123,
-                "line" : 9
-              },
-              "type" : "EXPR-ID"
+            "token" : {
+              "type" : "INT",
+              "value" : "i1",
+              "pos" : 98,
+              "line" : 6
             },
+            "type" : "EXPR-LITERAL"
+          }
+        } ],
+        "class" : {
+          "type" : "LET",
+          "value" : "let",
+          "pos" : 66,
+          "line" : 5
+        },
+        "type" : "STMT-LOCAL"
+      }, {
+        "body" : {
+          "type" : "STMT-BLOCK",
+          "stmts" : [ {
             "value" : {
-              "left" : {
+              "type" : "EXPR-ASSIGN",
+              "target" : {
                 "token" : {
                   "type" : "ID",
                   "value" : "r",
-                  "pos" : 127,
+                  "pos" : 123,
                   "line" : 9
                 },
                 "type" : "EXPR-ID"
               },
-              "right" : {
-                "token" : {
-                  "type" : "ID",
-                  "value" : "x",
-                  "pos" : 131,
+              "value" : {
+                "left" : {
+                  "token" : {
+                    "type" : "ID",
+                    "value" : "r",
+                    "pos" : 127,
+                    "line" : 9
+                  },
+                  "type" : "EXPR-ID"
+                },
+                "right" : {
+                  "token" : {
+                    "type" : "ID",
+                    "value" : "x",
+                    "pos" : 131,
+                    "line" : 9
+                  },
+                  "type" : "EXPR-ID"
+                },
+                "operator" : {
+                  "type" : "STAR",
+                  "value" : "*",
+                  "pos" : 129,
                   "line" : 9
                 },
-                "type" : "EXPR-ID"
-              },
-              "operator" : {
-                "type" : "STAR",
-                "value" : "*",
-                "pos" : 129,
-                "line" : 9
-              },
-              "type" : "EXPR-BINARY"
-            }
-          },
-          "type" : "STMT-EXPR"
-        }, {
-          "value" : {
-            "type" : "EXPR-ASSIGN",
-            "target" : {
-              "token" : {
-                "type" : "ID",
-                "value" : "i",
-                "pos" : 138,
-                "line" : 10
-              },
-              "type" : "EXPR-ID"
+                "type" : "EXPR-BINARY"
+              }
             },
+            "type" : "STMT-EXPR"
+          }, {
             "value" : {
-              "left" : {
+              "type" : "EXPR-ASSIGN",
+              "target" : {
                 "token" : {
                   "type" : "ID",
                   "value" : "i",
-                  "pos" : 142,
+                  "pos" : 138,
                   "line" : 10
                 },
                 "type" : "EXPR-ID"
               },
-              "right" : {
-                "token" : {
-                  "type" : "INT",
-                  "value" : "i1",
-                  "pos" : 146,
+              "value" : {
+                "left" : {
+                  "token" : {
+                    "type" : "ID",
+                    "value" : "i",
+                    "pos" : 142,
+                    "line" : 10
+                  },
+                  "type" : "EXPR-ID"
+                },
+                "right" : {
+                  "token" : {
+                    "type" : "INT",
+                    "value" : "i1",
+                    "pos" : 146,
+                    "line" : 10
+                  },
+                  "type" : "EXPR-LITERAL"
+                },
+                "operator" : {
+                  "type" : "PLUS",
+                  "value" : "+",
+                  "pos" : 144,
                   "line" : 10
                 },
-                "type" : "EXPR-LITERAL"
-              },
-              "operator" : {
-                "type" : "PLUS",
-                "value" : "+",
-                "pos" : 144,
-                "line" : 10
-              },
-              "type" : "EXPR-BINARY"
-            }
+                "type" : "EXPR-BINARY"
+              }
+            },
+            "type" : "STMT-EXPR"
+          } ]
+        },
+        "condition" : {
+          "left" : {
+            "token" : {
+              "type" : "ID",
+              "value" : "i",
+              "pos" : 111,
+              "line" : 8
+            },
+            "type" : "EXPR-ID"
           },
-          "type" : "STMT-EXPR"
-        } ]
-      },
-      "condition" : {
-        "left" : {
+          "right" : {
+            "token" : {
+              "type" : "ID",
+              "value" : "p",
+              "pos" : 115,
+              "line" : 8
+            },
+            "type" : "EXPR-ID"
+          },
+          "operator" : {
+            "type" : "LESS",
+            "value" : "<",
+            "pos" : 113,
+            "line" : 8
+          },
+          "type" : "EXPR-BINARY"
+        },
+        "type" : "STMT-WHILE"
+      }, {
+        "value" : {
           "token" : {
             "type" : "ID",
-            "value" : "i",
-            "pos" : 111,
-            "line" : 8
+            "value" : "r",
+            "pos" : 164,
+            "line" : 13
           },
           "type" : "EXPR-ID"
         },
-        "right" : {
-          "token" : {
-            "type" : "ID",
-            "value" : "p",
-            "pos" : 115,
-            "line" : 8
-          },
-          "type" : "EXPR-ID"
-        },
-        "operator" : {
-          "type" : "LESS",
-          "value" : "<",
-          "pos" : 113,
-          "line" : 8
-        },
-        "type" : "EXPR-BINARY"
-      },
-      "type" : "STMT-WHILE"
-    }, {
-      "value" : {
-        "token" : {
-          "type" : "ID",
-          "value" : "r",
-          "pos" : 164,
-          "line" : 13
-        },
-        "type" : "EXPR-ID"
-      },
-      "type" : "STMT-RETURN"
-    } ]
-  },
-  "data-type" : {
-    "type" : "ID",
-    "value" : "int",
-    "pos" : 15,
-    "line" : 1
-  },
-  "params" : [ ],
-  "name" : {
-    "type" : "ID",
-    "value" : "main",
-    "pos" : 7,
-    "line" : 1
-  },
-  "class" : {
-    "type" : "GLOBAL",
-    "value" : "global",
-    "pos" : 0,
-    "line" : 1
-  },
-  "type" : "DECL-FUN"
-} ]
+        "type" : "STMT-RETURN"
+      } ]
+    },
+    "data-type" : {
+      "type" : "ID",
+      "value" : "int",
+      "pos" : 15,
+      "line" : 1
+    },
+    "params" : [ ],
+    "name" : {
+      "type" : "ID",
+      "value" : "main",
+      "pos" : 7,
+      "line" : 1
+    },
+    "class" : {
+      "type" : "GLOBAL",
+      "value" : "global",
+      "pos" : 0,
+      "line" : 1
+    },
+    "type" : "DECL-FUN"
+  } ]
+}

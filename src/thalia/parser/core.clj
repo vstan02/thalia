@@ -24,15 +24,24 @@
   (or (token/check (first tokens) #{:EOF}) (empty? tokens)))
 
 (defn ^:private parse-file [tokens]
-  (loop [nodes []
+  (loop [uses []
+         funcs []
          errors []
          tokens0 tokens]
     (if (at-end? tokens0)
-      {:ast nodes :errors errors :rest tokens0}
+      {:ast {:type :FILE :uses uses :funcs funcs}
+       :errors errors
+       :rest tokens0}
       (let [res (decl/parse tokens0)]
-        (recur (conj nodes (:ast res))
-               (concat errors (:errors res))
-               (:rest res))))))
+        (case (->> res :ast :type)
+          :DECL-USE
+          (recur (conj uses (:ast res)) funcs
+                 (concat errors (:errors res))
+                 (:rest res))
+          :DECL-FUN
+          (recur uses (conj funcs (:ast res))
+                 (concat errors (:errors res))
+                 (:rest res)))))))
 
 (defn parse [tokens]
   (let [file (parse-file tokens)]
